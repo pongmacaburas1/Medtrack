@@ -1,0 +1,429 @@
+{% extends "base.html" %}
+{% load widget_tweaks %}
+
+{% block title %}
+Schedule Consultation
+{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <h1 class="h3 mb-4">Schedule Consultation</h1>
+
+    <div class="card shadow">
+        <div class="card-body">
+            <form method="post">
+                {% csrf_token %}
+
+                <!-- Nav tabs -->
+                <ul class="nav nav-tabs" id="consultationTabs" role="tablist">
+                    <li class="nav-item" role="presentation">
+                        <a class="nav-link active" id="details-tab" data-bs-toggle="tab" href="#details-pane" role="tab" aria-controls="details-pane" aria-selected="true">
+                            Consultation Details
+                        </a>
+                    </li>
+                    <li class="nav-item" role="presentation">
+                        <a class="nav-link" id="pmh-tab" data-bs-toggle="tab" href="#pmh-pane" role="tab" aria-controls="pmh-pane" aria-selected="false">
+                            Past Medical History
+                        </a>
+                    </li>
+                    <li class="nav-item" role="presentation">
+                        <a class="nav-link" id="pea-tab" data-bs-toggle="tab" href="#pea-pane" role="tab" aria-controls="pea-pane" aria-selected="false">
+                            Physical Exam on Arrival
+                        </a>
+                    </li>
+                    <li class="nav-item" role="presentation">
+                        <a class="nav-link" id="tb-tab" data-bs-toggle="tab" href="#tb-pane" role="tab" aria-controls="tb-pane" aria-selected="false">
+                            TB Screening
+                        </a>
+                    </li>
+                    <li class="nav-item" role="presentation">
+                        <a class="nav-link" id="fr-tab" data-bs-toggle="tab" href="#fr-pane" role="tab" aria-controls="fr-pane" aria-selected="false">
+                            Final Remarks
+                        </a>
+                    </li>
+                </ul>
+
+                <!-- Tab panes -->
+                <div class="tab-content pt-3" id="consultationTabsContent">
+                    <!-- Consultation Details -->
+                    <div class="tab-pane fade show active" id="details-pane" role="tabpanel" aria-labelledby="details-tab" tabindex="0">
+                        <div class="row g-3">
+                            <div class="col-md-6">
+                            {{ form.pdl_profile.label_tag }}
+                            {{ form.pdl_profile|add_class:"form-select" }}
+                           
+                            </div>
+
+                            <div class="col-md-6">
+                                {{ form.physician.label_tag }}
+                                {{ form.physician|add_class:"form-select" }}
+                            </div>
+
+                            <div class="col-md-6">
+                            Detention room: <span id="pdl-room-display" class="badge bg-secondary">—</span>
+
+                            </div>
+
+
+                            <div class="col-md-6">
+                                {{ form.reason.label_tag }}
+                                {{ form.reason|add_class:"form-select" }}
+                            </div>
+                            <div class="col-md-6">
+                                {{ form.consultation_date_date_only.label_tag }}
+                                {{ form.consultation_date_date_only|add_class:"form-control" }}
+                            </div>
+                            <div class="col-md-6">
+                                {{ form.consultation_time_block.label_tag }}
+                                {{ form.consultation_time_block|add_class:"form-select" }}
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-check mt-4">
+                                    {{ form.is_an_emergency|add_class:"form-check-input" }}
+                                    {{ form.is_an_emergency.label_tag }}
+                                </div>
+                            </div>
+                            <div class="col-md-12">
+                                {{ form.notes.label_tag }}
+                                {{ form.notes|add_class:"form-control" }}
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Past Medical History -->
+                    <div class="tab-pane fade" id="pmh-pane" role="tabpanel" aria-labelledby="pmh-tab" tabindex="0">
+                        <div class="row g-3">
+                            <div class="col-12">
+                                {{ form.pmh_pediatric_history.label_tag }}
+                                {{ form.pmh_pediatric_history|add_class:"form-control" }}
+                            </div>
+                            <div class="col-12">
+                                {{ form.pmh_major_adult_illnesses.label_tag }}
+                                {{ form.pmh_major_adult_illnesses|add_class:"form-control" }}
+                            </div>
+                            <div class="col-12">
+                                {{ form.pmh_major_surgeries.label_tag }}
+                                {{ form.pmh_major_surgeries|add_class:"form-control" }}
+                            </div>
+                            <div class="col-12">
+                                {{ form.pmh_serious_injuries.label_tag }}
+                                {{ form.pmh_serious_injuries|add_class:"form-control" }}
+                            </div>
+                            <div class="col-12">
+                                {{ form.pmh_limitations.label_tag }}
+                                {{ form.pmh_limitations|add_class:"form-control" }}
+                            </div>
+                            <div class="col-12">
+                                {{ form.pmh_medication_history.label_tag }}
+                                {{ form.pmh_medication_history|add_class:"form-control" }}
+                            </div>
+                            <div class="col-12">
+                                {{ form.pmh_transfusions_reactions.label_tag }}
+                                {{ form.pmh_transfusions_reactions|add_class:"form-control" }}
+                            </div>
+                            <div class="col-12">
+                                {{ form.pmh_mental_emotional.label_tag }}
+                                {{ form.pmh_mental_emotional|add_class:"form-control" }}
+                            </div>
+
+                            <div class="col-md-6">
+                                {{ form.pmh_blood_type.label_tag }}
+                                {{ form.pmh_blood_type|add_class:"form-select" }}
+                            </div>
+                            <div class="col-md-6">
+                                {{ form.pmh_allergies.label_tag }}
+                                {{ form.pmh_allergies|add_class:"form-control" }}
+                            </div>
+
+                            <div class="col-md-6">
+                                {{ form.pmh_family_history.label_tag }}
+                                {{ form.pmh_family_history|add_class:"form-select" }}
+                            </div>
+
+                            <div class="col-md-6">
+                                <div class="form-check mt-4">
+                                    {{ form.pmh_psychiatric_history|add_class:"form-check-input" }}
+                                    {{ form.pmh_psychiatric_history.label_tag }}
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                {{ form.pmh_psychiatric_when.label_tag }}
+                                {{ form.pmh_psychiatric_when|add_class:"form-control" }}
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-check mt-4">
+                                    {{ form.pmh_psychiatric_facility|add_class:"form-check-input" }}
+                                    {{ form.pmh_psychiatric_facility.label_tag }}
+                                </div>
+                            </div>
+
+                            <div class="col-md-6">
+                                <div class="form-check">
+                                    {{ form.pmh_arv_treatment|add_class:"form-check-input" }}
+                                    {{ form.pmh_arv_treatment.label_tag }}
+                                </div>
+                            </div>
+                            <div class="col-12">
+                                {{ form.pmh_arv_details.label_tag }}
+                                {{ form.pmh_arv_details|add_class:"form-control" }}
+                            </div>
+
+                            <div class="col-12">
+                                {{ form.pmh_vaccines.label_tag }}
+                                {{ form.pmh_vaccines|add_class:"form-control" }}
+                            </div>
+
+                            <div class="col-md-6">
+                                <div class="form-check">
+                                    {{ form.pmh_alcohol_drinker|add_class:"form-check-input" }}
+                                    {{ form.pmh_alcohol_drinker.label_tag }}
+                                </div>
+                            </div>
+
+                            <div class="col-md-6">
+                                {{ form.pmh_smoking.label_tag }}
+                                {{ form.pmh_smoking|add_class:"form-select" }}
+                            </div>
+
+                            <div class="col-md-6">
+                                <div class="form-check">
+                                    {{ form.pmh_illicit_drugs|add_class:"form-check-input" }}
+                                    {{ form.pmh_illicit_drugs.label_tag }}
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-check">
+                                    {{ form.pmh_poly_drug_use|add_class:"form-check-input" }}
+                                    {{ form.pmh_poly_drug_use.label_tag }}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Physical Exam on Arrival -->
+                    <div class="tab-pane fade" id="pea-pane" role="tabpanel" aria-labelledby="pea-tab" tabindex="0">
+                        <div class="row g-3">
+                            <div class="col-md-4">
+                                {{ form.pea_temperature.label_tag }}
+                                {{ form.pea_temperature|add_class:"form-control" }}
+                            </div>
+                            <div class="col-md-4">
+                                {{ form.pea_blood_pressure.label_tag }}
+                                {{ form.pea_blood_pressure|add_class:"form-control" }}
+                            </div>
+                            <div class="col-md-4">
+                                {{ form.pea_heart_rate.label_tag }}
+                                {{ form.pea_heart_rate|add_class:"form-control" }}
+                            </div>
+                            <div class="col-md-4">
+                                {{ form.pea_rr.label_tag }}
+                                {{ form.pea_rr|add_class:"form-control" }}
+                            </div>
+                            <div class="col-md-4">
+                                {{ form.pea_height.label_tag }}
+                                {{ form.pea_height|add_class:"form-control" }}
+                            </div>
+                            <div class="col-md-4">
+                                {{ form.pea_weight.label_tag }}
+                                {{ form.pea_weight|add_class:"form-control" }}
+                            </div>
+                            <div class="col-md-4">
+                                {{ form.pea_bmi.label_tag }}
+                                {{ form.pea_bmi|add_class:"form-control" }}
+                            </div>
+
+                            <div class="col-md-6">
+                                <div class="form-check">
+                                    {{ form.pea_general_appearance|add_class:"form-check-input" }}
+                                    {{ form.pea_general_appearance.label_tag }}
+                                </div>
+                                <div class="form-check">
+                                    {{ form.pea_head_eyes_ears_nose_throat|add_class:"form-check-input" }}
+                                    {{ form.pea_head_eyes_ears_nose_throat.label_tag }}
+                                </div>
+                                <div class="form-check">
+                                    {{ form.pea_neck|add_class:"form-check-input" }}
+                                    {{ form.pea_neck.label_tag }}
+                                </div>
+                                <div class="form-check">
+                                    {{ form.pea_chest_lungs|add_class:"form-check-input" }}
+                                    {{ form.pea_chest_lungs.label_tag }}
+                                </div>
+                                <div class="form-check">
+                                    {{ form.pea_heart|add_class:"form-check-input" }}
+                                    {{ form.pea_heart.label_tag }}
+                                </div>
+                            </div>
+
+                            <div class="col-md-6">
+                                <div class="form-check">
+                                    {{ form.pea_abdomen|add_class:"form-check-input" }}
+                                    {{ form.pea_abdomen.label_tag }}
+                                </div>
+                                <div class="form-check">
+                                    {{ form.pea_genito_urinary|add_class:"form-check-input" }}
+                                    {{ form.pea_genito_urinary.label_tag }}
+                                </div>
+                                <div class="form-check">
+                                    {{ form.pea_musculoskeletal|add_class:"form-check-input" }}
+                                    {{ form.pea_musculoskeletal.label_tag }}
+                                </div>
+                                <div class="form-check">
+                                    {{ form.pea_extremities|add_class:"form-check-input" }}
+                                    {{ form.pea_extremities.label_tag }}
+                                </div>
+                            </div>
+
+                            <div class="col-12">
+                                {{ form.pea_other_findings.label_tag }}
+                                {{ form.pea_other_findings|add_class:"form-control" }}
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- TB Screening -->
+                    <div class="tab-pane fade" id="tb-pane" role="tabpanel" aria-labelledby="tb-tab" tabindex="0">
+                        <div class="row g-3">
+                            <div class="col-md-6">
+                                <div class="form-check">
+                                    {{ form.tb_unexplained_cough|add_class:"form-check-input" }}
+                                    {{ form.tb_unexplained_cough.label_tag }}
+                                </div>
+                                <div class="form-check">
+                                    {{ form.tb_bmi_less_18_5|add_class:"form-check-input" }}
+                                    {{ form.tb_bmi_less_18_5.label_tag }}
+                                </div>
+                                <div class="form-check">
+                                    {{ form.tb_blood_streaked_sputum|add_class:"form-check-input" }}
+                                    {{ form.tb_blood_streaked_sputum.label_tag }}
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-check">
+                                    {{ form.tb_cxr_suggestive|add_class:"form-check-input" }}
+                                    {{ form.tb_cxr_suggestive.label_tag }}
+                                </div>
+                                <div class="form-check">
+                                    {{ form.tb_previous_treatment|add_class:"form-check-input" }}
+                                    {{ form.tb_previous_treatment.label_tag }}
+                                </div>
+                                <div class="form-check">
+                                    {{ form.tb_exposure|add_class:"form-check-input" }}
+                                    {{ form.tb_exposure.label_tag }}
+                                </div>
+                            </div>
+
+                            <div class="col-md-6">
+                                {{ form.tb_remarks.label_tag }}
+                                {{ form.tb_remarks|add_class:"form-select" }}
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Final Remarks -->
+                    <div class="tab-pane fade" id="fr-pane" role="tabpanel" aria-labelledby="fr-tab" tabindex="0">
+                        <div class="row g-3">
+                            <div class="col-md-6">
+                                {{ form.fr_conclusion.label_tag }}
+                                {{ form.fr_conclusion|add_class:"form-select" }}
+                            </div>
+                            <div class="col-12">
+                                {{ form.fr_other_impressions.label_tag }}
+                                {{ form.fr_other_impressions|add_class:"form-control" }}
+                            </div>
+                            <div class="col-md-6">
+                                {{ form.fr_recommendation.label_tag }}
+                                {{ form.fr_recommendation|add_class:"form-select" }}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="mt-4">
+                    <button type="submit" class="btn btn-primary">Schedule</button>
+                    <a href="{% url 'consultations:consultation_calendar' %}" class="btn btn-secondary">Cancel</a>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- If Bootstrap JS isn't loaded in base.html, include it here to ensure tabs work -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+  // Activate tab on hash change / keep current tab on reload
+  (function() {
+    const triggerTabList = [].slice.call(document.querySelectorAll('#consultationTabs a[data-bs-toggle="tab"]'));
+    triggerTabList.forEach(function (triggerEl) {
+      triggerEl.addEventListener('shown.bs.tab', function (event) {
+        history.replaceState(null, '', event.target.getAttribute('href'));
+      });
+    });
+    const hash = window.location.hash;
+    if (hash) {
+      const triggerEl = document.querySelector(`#consultationTabs a[href="${hash}"]`);
+      if (triggerEl) new bootstrap.Tab(triggerEl).show();
+    }
+  })();
+</script>
+<script>
+document.addEventListener('change', function(e){
+  if (e.target && e.target.matches('#pdlSelect')) {
+    e.target.dispatchEvent(new Event('change', { bubbles: true })); // re-fire to hit the bound listener
+  }
+});
+</script>
+
+<script>
+(function () {
+  function wireUp() {
+    const sel = document.getElementById('pdlSelect');
+    const roomBadge = document.getElementById('pdl-room-display');   // the badge in your template
+    const roomInput = document.getElementById('id_detention_room_number'); // optional readonly input
+
+    if (!sel) { console.log('pdlSelect not found'); return; }
+    console.log('pdlSelect found');
+
+    // 1) Listen for changes
+    sel.addEventListener('change', function (e) {
+      const val = e.target.value;
+      console.log('pdl change ->', val);
+
+      if (!val) {
+        if (roomBadge) roomBadge.textContent = '—';
+        if (roomInput) roomInput.value = '';
+        return;
+      }
+
+      fetch(`/pdl/api/pdl/${encodeURIComponent(val)}/latest-room/`, { credentials: 'same-origin' })
+        .then(r => r.ok ? r.json() : Promise.reject(r))
+        .then(data => {
+          const rn = (data && data.detention_room_number) ? data.detention_room_number : '';
+          if (roomBadge) roomBadge.textContent = rn || '—';
+          if (roomInput) {
+            roomInput.value = rn || '';
+            roomInput.dispatchEvent(new Event('change', { bubbles: true }));
+          }
+        })
+        .catch(err => console.error('room fetch failed:', err));
+    });
+
+    // 2) Prime on load if an option is already selected
+    if (sel.value) {
+      sel.dispatchEvent(new Event('change', { bubbles: true }));
+    }
+  }
+
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', wireUp);
+  } else {
+    wireUp();
+  }
+  // If you use Turbo/HTMX, keep these hooks:
+  document.addEventListener('turbo:load', wireUp);
+  document.addEventListener('htmx:afterSettle', wireUp);
+})();
+</script>
+
+
+{% endblock %}

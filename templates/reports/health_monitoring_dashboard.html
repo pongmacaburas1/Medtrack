@@ -1,0 +1,403 @@
+{% extends "base.html" %}
+{% block title %}Health Monitoring Statistics — MedTrack{% endblock %}
+
+{% block content %}
+<style>
+  .hm-wrap { padding: 2rem 1.5rem; max-width: 1300px; margin: 0 auto; }
+  
+  /* Header */
+  .hm-header {
+    display: flex; align-items: flex-start; justify-content: space-between;
+    flex-wrap: wrap; gap: 1rem; margin-bottom: 2rem;
+  }
+  .hm-title { font-size: 1.5rem; font-weight: 700; margin: 0; }
+  .hm-subtitle { font-size: .85rem; opacity: .6; margin-top: .25rem; }
+  
+  /* Stat Cards Grid */
+  .stat-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 1rem;
+    margin-bottom: 2rem;
+  }
+  
+  .stat-card {
+    border-radius: 14px;
+    padding: 1.25rem;
+    display: flex;
+    flex-direction: column;
+    gap: .5rem;
+  }
+  [data-bs-theme="dark"] .stat-card { background: rgba(255,255,255,.04); border: 1px solid rgba(255,255,255,.08); }
+  [data-bs-theme="light"] .stat-card { background: #fff; border: 1px solid #e9ecef; box-shadow: 0 2px 8px rgba(0,0,0,.04); }
+  
+  .stat-icon {
+    width: 48px; height: 48px; border-radius: 12px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 1.4rem;
+  }
+  .stat-icon.emerald { background: rgba(16,185,129,.15); color: #10b981; }
+  .stat-icon.blue { background: rgba(59,130,246,.15); color: #3b82f6; }
+  .stat-icon.amber { background: rgba(245,158,11,.15); color: #f59e0b; }
+  .stat-icon.rose { background: rgba(244,63,94,.15); color: #f43f5e; }
+  .stat-icon.purple { background: rgba(168,85,247,.15); color: #a855f7; }
+  
+  .stat-val { font-size: 2rem; font-weight: 700; line-height: 1; }
+  .stat-lbl { font-size: .8rem; opacity: .5; text-transform: uppercase; letter-spacing: .04em; }
+  
+  /* Panel Cards */
+  .panel-card {
+    border-radius: 14px;
+    overflow: hidden;
+    margin-bottom: 1.5rem;
+  }
+  [data-bs-theme="dark"] .panel-card { background: rgba(255,255,255,.04); border: 1px solid rgba(255,255,255,.08); }
+  [data-bs-theme="light"] .panel-card { background: #fff; border: 1px solid #e9ecef; box-shadow: 0 2px 8px rgba(0,0,0,.04); }
+  
+  .panel-head {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 1rem 1.25rem;
+    border-bottom: 1px solid rgba(128,128,128,.1);
+  }
+  .panel-title { font-size: .95rem; font-weight: 700; margin: 0; }
+  
+  /* Tables */
+  .hm-table { width: 100%; border-collapse: collapse; }
+  .hm-table thead th {
+    padding: .75rem 1rem;
+    font-size: .75rem;
+    text-transform: uppercase;
+    letter-spacing: .05em;
+    font-weight: 600;
+    opacity: .5;
+    text-align: left;
+  }
+  .hm-table tbody tr {
+    border-top: 1px solid rgba(128,128,128,.08);
+    transition: background .15s;
+  }
+  [data-bs-theme="dark"] .hm-table tbody tr:hover { background: rgba(255,255,255,.03); }
+  [data-bs-theme="light"] .hm-table tbody tr:hover { background: #f8f9fa; }
+  .hm-table tbody td { padding: .85rem 1rem; vertical-align: middle; }
+  
+  /* Illness Badge */
+  .illness-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: .35rem;
+    font-size: .75rem;
+    font-weight: 600;
+    padding: .3rem .65rem;
+    border-radius: 6px;
+  }
+  .ib-htn { background: rgba(244,63,94,.12); color: #f43f5e; }
+  .ib-dm { background: rgba(245,158,11,.12); color: #f59e0b; }
+  .ib-heart { background: rgba(220,38,38,.12); color: #dc2626; }
+  .ib-asthma { background: rgba(59,130,246,.12); color: #3b82f6; }
+  .ib-tb { background: rgba(107,114,128,.12); color: #6b7280; }
+  .ib-mental { background: rgba(168,85,247,.12); color: #a855f7; }
+  .ib-renal { background: rgba(14,165,233,.12); color: #0ea5e9; }
+  .ib-cancer { background: rgba(190,24,93,.12); color: #be185d; }
+  .ib-other { background: rgba(75,85,99,.12); color: #4b5563; }
+  
+  /* Progress bars */
+  .mini-bar {
+    height: 8px;
+    background: rgba(128,128,128,.1);
+    border-radius: 4px;
+    overflow: hidden;
+    min-width: 100px;
+  }
+  .mini-bar-fill {
+    height: 100%;
+    border-radius: 4px;
+    transition: width .3s;
+  }
+  .fill-emerald { background: #10b981; }
+  .fill-blue { background: #3b82f6; }
+  .fill-amber { background: #f59e0b; }
+  .fill-rose { background: #f43f5e; }
+  
+  /* Empty state */
+  .empty-state {
+    text-align: center;
+    padding: 3rem;
+    opacity: .4;
+  }
+  .empty-state i { font-size: 2.5rem; display: block; margin-bottom: .75rem; }
+  
+  /* Two column layout */
+  .two-col {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1.5rem;
+  }
+  @media (max-width: 992px) {
+    .two-col { grid-template-columns: 1fr; }
+  }
+</style>
+
+<div class="hm-wrap">
+
+  <!-- Header -->
+  <div class="hm-header">
+    <div>
+      <h1 class="hm-title">
+        <i class="bi bi-activity me-2" style="color:var(--emerald);"></i>Health Monitoring Statistics
+      </h1>
+      <p class="hm-subtitle">
+        Comprehensive health data summary for PDL Health Monitoring System — Generated {{ today|date:"F d, Y" }}
+      </p>
+    </div>
+    <div class="d-flex gap-2">
+      <a href="?export=excel" class="btn btn-sm btn-outline-success">
+        <i class="bi bi-file-earmark-excel me-1"></i> Export to Excel
+      </a>
+      <a href="{% url 'reports:report_center' %}" class="btn btn-sm btn-outline-secondary">
+        <i class="bi bi-arrow-left me-1"></i> Back to Reports
+      </a>
+    </div>
+  </div>
+
+  <!-- Summary Statistics -->
+  <div class="stat-grid">
+    <div class="stat-card">
+      <div class="stat-icon emerald"><i class="bi bi-people-fill"></i></div>
+      <div class="stat-val" style="color:#10b981;">{{ total_pdls }}</div>
+      <div class="stat-lbl">Total PDLs</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-icon rose"><i class="bi bi-heart-pulse-fill"></i></div>
+      <div class="stat-val" style="color:#f43f5e;">{{ total_pdls_with_conditions }}</div>
+      <div class="stat-lbl">PDLs with Illnesses</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-icon amber"><i class="bi bi-exclamation-triangle-fill"></i></div>
+      <div class="stat-val" style="color:#f59e0b;">{{ multi_condition_count }}</div>
+      <div class="stat-lbl">Multiple Conditions</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-icon blue"><i class="bi bi-plus-circle-fill"></i></div>
+      <div class="stat-val" style="color:#3b82f6;">{{ recent_conditions }}</div>
+      <div class="stat-lbl">New Cases (30 Days)</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-icon purple"><i class="bi bi-clipboard2-pulse-fill"></i></div>
+      <div class="stat-val" style="color:#a855f7;">{{ consultation_stats.total }}</div>
+      <div class="stat-lbl">Total Consultations</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-icon rose"><i class="bi bi-lightning-fill"></i></div>
+      <div class="stat-val" style="color:#dc2626;">{{ consultation_stats.emergency }}</div>
+      <div class="stat-lbl">Emergency Cases</div>
+    </div>
+  </div>
+
+  <!-- Two Column Layout -->
+  <div class="two-col">
+    
+    <!-- Illness Types Breakdown -->
+    <div class="panel-card">
+      <div class="panel-head">
+        <h2 class="panel-title"><i class="bi bi-bar-chart-fill me-2 opacity-50"></i>Patients by Illness Type</h2>
+        <span class="badge bg-secondary-subtle text-secondary">{{ illness_breakdown|length }} types</span>
+      </div>
+      {% if illness_breakdown %}
+      <div class="table-responsive">
+        <table class="hm-table">
+          <thead>
+            <tr>
+              <th>Illness</th>
+              <th style="text-align:center;">Patients</th>
+              <th>Prevalence</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for illness in illness_breakdown %}
+            <tr>
+              <td>
+                <span class="illness-badge ib-{{ illness.code|lower }}">
+                  {% if illness.code == 'HTN' %}<i class="bi bi-heart"></i>
+                  {% elif illness.code == 'DM' %}<i class="bi bi-droplet"></i>
+                  {% elif illness.code == 'HEART' %}<i class="bi bi-heart-fill"></i>
+                  {% elif illness.code == 'ASTHMA' %}<i class="bi bi-wind"></i>
+                  {% elif illness.code == 'TB' %}<i class="bi bi-lungs"></i>
+                  {% elif illness.code == 'MENTAL' %}<i class="bi bi-emoji-neutral"></i>
+                  {% elif illness.code == 'RENAL' %}<i class="bi bi-moisture"></i>
+                  {% elif illness.code == 'CANCER' %}<i class="bi bi-asterisk"></i>
+                  {% else %}<i class="bi bi-bandaid"></i>
+                  {% endif %}
+                  {{ illness.name }}
+                </span>
+              </td>
+              <td style="text-align:center;">
+                <strong>{{ illness.patient_count }}</strong>
+              </td>
+              <td>
+                {% if total_pdls_with_conditions > 0 %}
+                {% widthratio illness.patient_count total_pdls_with_conditions 100 as pct %}
+                <div class="d-flex align-items-center gap-2">
+                  <div class="mini-bar flex-grow-1">
+                    <div class="mini-bar-fill fill-rose" style="width:{{ pct }}%;"></div>
+                  </div>
+                  <span class="small text-muted" style="min-width:35px;">{{ pct }}%</span>
+                </div>
+                {% else %}
+                <span class="text-muted">—</span>
+                {% endif %}
+              </td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+      {% else %}
+      <div class="empty-state">
+        <i class="bi bi-heart-pulse"></i>
+        <div>No health conditions recorded yet</div>
+      </div>
+      {% endif %}
+    </div>
+
+    <!-- Most Prescribed Medications -->
+    <div class="panel-card">
+      <div class="panel-head">
+        <h2 class="panel-title"><i class="bi bi-capsule me-2 opacity-50"></i>Most Prescribed Medications</h2>
+        <span class="badge bg-secondary-subtle text-secondary">Top 10</span>
+      </div>
+      {% if medications_list %}
+      <div class="table-responsive">
+        <table class="hm-table">
+          <thead>
+            <tr>
+              <th>#</th>
+              <th>Medication</th>
+              <th style="text-align:center;">Rx Count</th>
+              <th style="text-align:center;">Patients</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for med in medications_list %}
+            <tr>
+              <td>
+                <span class="badge {% if forloop.counter <= 3 %}bg-warning text-dark{% else %}bg-secondary-subtle text-secondary{% endif %}">
+                  {{ forloop.counter }}
+                </span>
+              </td>
+              <td>
+                <div class="fw-semibold">{{ med.name }}</div>
+                {% if med.generic_name %}
+                <small class="text-muted">{{ med.generic_name }}</small>
+                {% endif %}
+              </td>
+              <td style="text-align:center;">
+                <strong style="color:#10b981;">{{ med.prescription_count }}</strong>
+              </td>
+              <td style="text-align:center;">
+                {{ med.total_patients }}
+              </td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+      {% else %}
+      <div class="empty-state">
+        <i class="bi bi-capsule"></i>
+        <div>No prescriptions recorded yet</div>
+      </div>
+      {% endif %}
+    </div>
+    
+  </div>
+
+  <!-- Health Condition Summary Table -->
+  <div class="panel-card">
+    <div class="panel-head">
+      <h2 class="panel-title"><i class="bi bi-table me-2 opacity-50"></i>Complete Illness Summary</h2>
+      <span class="badge bg-secondary-subtle text-secondary">
+        {{ total_pdls_with_conditions }} PDL{{ total_pdls_with_conditions|pluralize }} affected
+      </span>
+    </div>
+    {% if illness_breakdown %}
+    <div class="table-responsive">
+      <table class="hm-table">
+        <thead>
+          <tr>
+            <th>Illness Type</th>
+            <th style="text-align:center;">Total Patients</th>
+            <th style="text-align:center;">Total Cases</th>
+            <th>% of PDL Population</th>
+            <th>Health Impact</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for illness in illness_breakdown %}
+          <tr>
+            <td>
+              <span class="illness-badge ib-{{ illness.code|lower }}">
+                {{ illness.name }}
+              </span>
+            </td>
+            <td style="text-align:center;">
+              <strong class="fs-5">{{ illness.patient_count }}</strong>
+            </td>
+            <td style="text-align:center;">
+              {{ illness.total_cases }}
+            </td>
+            <td>
+              {% if total_pdls > 0 %}
+              {% widthratio illness.patient_count total_pdls 100 as pop_pct %}
+              <div class="d-flex align-items-center gap-2">
+                <div class="mini-bar" style="width:150px;">
+                  <div class="mini-bar-fill fill-emerald" style="width:{{ pop_pct }}%;"></div>
+                </div>
+                <span class="small fw-semibold">{{ pop_pct }}%</span>
+              </div>
+              {% else %}
+              <span class="text-muted">—</span>
+              {% endif %}
+            </td>
+            <td>
+              {% if illness.patient_count > 10 %}
+              <span class="badge bg-danger">High</span>
+              {% elif illness.patient_count > 5 %}
+              <span class="badge bg-warning text-dark">Medium</span>
+              {% else %}
+              <span class="badge bg-success">Low</span>
+              {% endif %}
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+        <tfoot>
+          <tr style="border-top: 2px solid rgba(128,128,128,.2);">
+            <td><strong>Total</strong></td>
+            <td style="text-align:center;"><strong class="fs-5">{{ total_pdls_with_conditions }}</strong></td>
+            <td style="text-align:center;">
+              {% with illness_breakdown|length as count %}
+              {{ count }} types
+              {% endwith %}
+            </td>
+            <td>
+              {% if total_pdls > 0 %}
+              {% widthratio total_pdls_with_conditions total_pdls 100 as total_pct %}
+              <strong>{{ total_pct }}% of all PDLs</strong>
+              {% endif %}
+            </td>
+            <td></td>
+          </tr>
+        </tfoot>
+      </table>
+    </div>
+    {% else %}
+    <div class="empty-state">
+      <i class="bi bi-clipboard-data"></i>
+      <div>No health statistics available</div>
+      <small class="text-muted mt-2">Start recording health conditions to see statistics here</small>
+    </div>
+    {% endif %}
+  </div>
+
+</div>
+{% endblock %}

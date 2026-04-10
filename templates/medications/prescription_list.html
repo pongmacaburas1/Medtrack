@@ -1,0 +1,45 @@
+{% extends "base.html" %}
+
+{% block title %}
+Prescriptions for {{ medication.name }}
+{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <h1 class="h3 text-center mb-4">Prescriptions for {{ medication.name }}</h1>
+    <table class="table table-bordered table-hover">
+        <thead>
+            <tr>
+                <th>PDL Profile</th>
+                <th>Dosage</th>
+                <th>Frequency</th>
+                <th>Duration</th>
+                <th>Prescribed By</th>
+                <th>Print</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for prescription in prescriptions %}
+            <tr>
+                <td>{{ prescription.pdl_profile }}</td>
+                <td>{{ prescription.dosage }}</td>
+                <td>{{ prescription.frequency }}</td>
+                <td>{{ prescription.duration }}</td>
+                <td>{{ prescription.prescribed_by }}</td>
+                <td>
+                                    <a class="btn btn-sm btn-outline-primary"
+                href="{% url 'medications:prescription_printable' prescription.id %}">
+                Print RX
+                </a>
+                </td>
+            </tr>
+            {% empty %}
+            <tr>
+                <td colspan="5" class="text-center">No prescriptions found for this medication.</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    <a href="{% url 'medications:medication_list' %}" class="btn btn-secondary mt-3">Back to Medication List</a>
+</div>
+{% endblock %}

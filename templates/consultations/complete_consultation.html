@@ -1,0 +1,148 @@
+
+{% extends "base.html" %}
+
+{% block title %}Complete Consultation{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+  <h1 class="h3 mb-4">Complete Consultation</h1>
+  
+  <div class="card mb-4">
+    <div class="card-header bg-info text-white">
+      <i class="bi bi-info-circle"></i> Consultation Details
+    </div>
+    <div class="card-body">
+      <p><strong>PDL:</strong> {{ consultation.pdl_profile }}</p>
+      <p><strong>Physician:</strong> {{ consultation.physician }}</p>
+      <p><strong>Date:</strong> {{ consultation.consultation_date_date_only }}</p>
+      <p><strong>Reason:</strong> {{ consultation.reason }}</p>
+      {% if consultation.is_followup %}
+      <p><span class="badge bg-secondary">Follow-up Consultation</span></p>
+      {% endif %}
+    </div>
+  </div>
+
+  <form method="post" id="completeForm">
+    {% csrf_token %}
+    <input type="hidden" name="add_followup" id="add_followup" value="0">
+    
+    <div class="card mb-4">
+      <div class="card-header bg-primary text-white">
+        <i class="bi bi-clipboard2-pulse"></i> Final Remarks
+      </div>
+      <div class="card-body">
+        <div class="mb-3">
+          <label for="fr_conclusion" class="form-label">Final Conclusion</label>
+          <select class="form-select" id="fr_conclusion" name="fr_conclusion">
+            <option value="">-- Select Conclusion --</option>
+            <option value="HEALTHY" {% if consultation.fr_conclusion == 'HEALTHY' %}selected{% endif %}>Practically healthy</option>
+            <option value="SBIRT" {% if consultation.fr_conclusion == 'SBIRT' %}selected{% endif %}>SBIRT</option>
+            <option value="PHILPEN" {% if consultation.fr_conclusion == 'PHILPEN' %}selected{% endif %}>PhilPEN</option>
+            <option value="NEURO_PSYCH" {% if consultation.fr_conclusion == 'NEURO_PSYCH' %}selected{% endif %}>Neuro-psychiatric evaluation</option>
+            <option value="ILL_TREATMENT" {% if consultation.fr_conclusion == 'ILL_TREATMENT' %}selected{% endif %}>Further documentation of allegations of ill-treatment</option>
+          </select>
+        </div>
+
+        <div class="mb-3">
+          <label for="fr_other_impressions" class="form-label">Other Impressions / Diagnosis</label>
+          <textarea class="form-control" id="fr_other_impressions" name="fr_other_impressions" rows="3" placeholder="Enter diagnosis or other impressions...">{{ consultation.fr_other_impressions|default:'' }}</textarea>
+        </div>
+
+        <div class="mb-3">
+          <label for="fr_recommendation" class="form-label">Recommendation</label>
+          <select class="form-select" id="fr_recommendation" name="fr_recommendation">
+            <option value="">-- Select Recommendation --</option>
+            <option value="DORM" {% if consultation.fr_recommendation == 'DORM' %}selected{% endif %}>To be accommodated in general dormitory</option>
+            <option value="ISOLATED" {% if consultation.fr_recommendation == 'ISOLATED' %}selected{% endif %}>To be isolated</option>
+            <option value="HOSPITAL" {% if consultation.fr_recommendation == 'HOSPITAL' %}selected{% endif %}>To be hospitalized</option>
+          </select>
+        </div>
+
+        <div class="mb-3">
+          <label for="notes" class="form-label">Additional Notes</label>
+          <textarea class="form-control" id="notes" name="notes" rows="3" placeholder="Any additional notes...">{{ consultation.notes|default:'' }}</textarea>
+        </div>
+      </div>
+    </div>
+
+    <!-- Follow-up Section (hidden by default) -->
+    {% if not consultation.followup_scheduled %}
+    <div class="card mb-4" id="followupSection" style="display: none;">
+      <div class="card-header bg-warning text-dark">
+        <i class="bi bi-calendar-plus"></i> Schedule Follow-up Consultation
+      </div>
+      <div class="card-body">
+        <div class="row">
+          <div class="col-md-4">
+            <label for="followup_days" class="form-label">Schedule follow-up in (days)</label>
+            <input type="number" class="form-control" id="followup_days" name="followup_days" value="7" min="1" max="365">
+          </div>
+          <div class="col-md-8">
+            <label for="followup_notes" class="form-label">Follow-up Notes</label>
+            <textarea class="form-control" id="followup_notes" name="followup_notes" rows="2" placeholder="Reason for follow-up or special instructions..."></textarea>
+          </div>
+        </div>
+        <div class="alert alert-info mt-3 mb-0">
+          <i class="bi bi-info-circle"></i> A new consultation will be scheduled for this patient with the same physician.
+        </div>
+      </div>
+    </div>
+    {% endif %}
+
+    <div class="d-flex gap-2 flex-wrap">
+      <button type="submit" class="btn btn-success" id="btnComplete">
+        <i class="bi bi-check-circle"></i> Mark as Completed
+      </button>
+      {% if not consultation.followup_scheduled %}
+      <button type="button" class="btn btn-warning" id="btnToggleFollowup">
+        <i class="bi bi-calendar-plus"></i> Add Follow-up Consultation
+      </button>
+      {% else %}
+      <span class="badge bg-info align-self-center px-3 py-2">
+        <i class="bi bi-check"></i> Follow-up already scheduled
+      </span>
+      {% endif %}
+      <a href="{% url 'consultations:consultation_calendar' %}" class="btn btn-secondary">
+        <i class="bi bi-arrow-left"></i> Cancel
+      </a>
+    </div>
+  </form>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+  const followupSection = document.getElementById('followupSection');
+  const btnToggleFollowup = document.getElementById('btnToggleFollowup');
+  const btnComplete = document.getElementById('btnComplete');
+  const addFollowupInput = document.getElementById('add_followup');
+  
+  let followupEnabled = false;
+  
+  if (btnToggleFollowup) {
+    btnToggleFollowup.addEventListener('click', function() {
+      followupEnabled = !followupEnabled;
+      
+      if (followupEnabled) {
+        followupSection.style.display = 'block';
+        addFollowupInput.value = '1';
+        btnComplete.innerHTML = '<i class="bi bi-check-circle"></i> Complete & Schedule Follow-up';
+        btnComplete.classList.remove('btn-success');
+        btnComplete.classList.add('btn-warning');
+        btnToggleFollowup.innerHTML = '<i class="bi bi-x-circle"></i> Cancel Follow-up';
+        btnToggleFollowup.classList.remove('btn-warning');
+        btnToggleFollowup.classList.add('btn-outline-secondary');
+      } else {
+        followupSection.style.display = 'none';
+        addFollowupInput.value = '0';
+        btnComplete.innerHTML = '<i class="bi bi-check-circle"></i> Mark as Completed';
+        btnComplete.classList.remove('btn-warning');
+        btnComplete.classList.add('btn-success');
+        btnToggleFollowup.innerHTML = '<i class="bi bi-calendar-plus"></i> Add Follow-up Consultation';
+        btnToggleFollowup.classList.remove('btn-outline-secondary');
+        btnToggleFollowup.classList.add('btn-warning');
+      }
+    });
+  }
+});
+</script>
+{% endblock %}

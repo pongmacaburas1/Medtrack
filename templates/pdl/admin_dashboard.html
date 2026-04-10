@@ -1,0 +1,472 @@
+{% extends "base.html" %}
+{% block title %}IT Admin Panel — MedTrack{% endblock %}
+
+{% block content %}
+<style>
+  /* ── PAGE SHELL ──────────────────────────────── */
+  .admin-wrap { padding: 2rem 1.5rem; max-width: 1200px; margin: 0 auto; }
+
+  /* ── HEADER ──────────────────────────────────── */
+  .admin-header {
+    display: flex; align-items: center; justify-content: space-between;
+    flex-wrap: wrap; gap: 1rem; margin-bottom: 1.75rem;
+  }
+  .admin-title { font-size: 1.45rem; font-weight: 700; margin: 0; }
+  .admin-subtitle { font-size: .82rem; opacity: .55; margin-top: .15rem; }
+
+  /* ── STAT CARDS ──────────────────────────────── */
+  .stat-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 1rem; margin-bottom: 1.75rem; }
+  .stat-card {
+    border-radius: 14px; padding: 1.1rem 1.25rem;
+    display: flex; align-items: center; gap: 1rem;
+    border: 1px solid transparent;
+  }
+  [data-bs-theme="dark"]  .stat-card { background: rgba(255,255,255,.04); border-color: rgba(255,255,255,.07); }
+  [data-bs-theme="light"] .stat-card { background: #fff; border-color: #e9ecef; box-shadow: 0 2px 8px rgba(0,0,0,.05); }
+  .stat-icon {
+    width: 44px; height: 44px; border-radius: 11px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 1.25rem; flex-shrink: 0;
+  }
+  .stat-icon.c-emerald  { background: rgba(16,185,129,.15); color: #10b981; }
+  .stat-icon.c-blue     { background: rgba(59,130,246,.15);  color: #3b82f6; }
+  .stat-icon.c-purple   { background: rgba(168,85,247,.15);  color: #a855f7; }
+  .stat-icon.c-amber    { background: rgba(245,158,11,.15);  color: #f59e0b; }
+  .stat-icon.c-rose     { background: rgba(244,63,94,.15);   color: #f43f5e; }
+  .stat-val { font-size: 1.6rem; font-weight: 700; line-height: 1; }
+  .stat-lbl { font-size: .75rem; opacity: .5; font-weight: 500; margin-top: .2rem; text-transform: uppercase; letter-spacing: .04em; }
+
+  /* ── PANEL CARD ──────────────────────────────── */
+  .panel-card { border-radius: 14px; overflow: hidden; }
+  [data-bs-theme="dark"]  .panel-card { background: rgba(255,255,255,.04); border: 1px solid rgba(255,255,255,.07); }
+  [data-bs-theme="light"] .panel-card { background: #fff; border: 1px solid #e9ecef; box-shadow: 0 2px 12px rgba(0,0,0,.05); }
+
+  .panel-head {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 1rem 1.25rem; border-bottom: 1px solid rgba(128,128,128,.12);
+    flex-wrap: wrap; gap: .5rem;
+  }
+  .panel-head-title { font-size: .95rem; font-weight: 700; margin: 0; }
+
+  /* ── TABLE ───────────────────────────────────── */
+  .admin-table { width: 100%; border-collapse: collapse; }
+  .admin-table thead tr {
+    font-size: .73rem; text-transform: uppercase; letter-spacing: .06em; font-weight: 600;
+  }
+  [data-bs-theme="dark"]  .admin-table thead tr { color: rgba(255,255,255,.4); }
+  [data-bs-theme="light"] .admin-table thead tr { color: rgba(0,0,0,.4); }
+  .admin-table thead th { padding: .65rem 1rem; font-weight: 600; }
+  .admin-table tbody tr {
+    border-top: 1px solid rgba(128,128,128,.08);
+    transition: background .15s;
+  }
+  [data-bs-theme="dark"]  .admin-table tbody tr:hover { background: rgba(255,255,255,.03); }
+  [data-bs-theme="light"] .admin-table tbody tr:hover { background: #f8f9fa; }
+  .admin-table tbody td { padding: .8rem 1rem; vertical-align: middle; font-size: .88rem; }
+
+  /* ── AVATAR ──────────────────────────────────── */
+  .u-avatar {
+    width: 34px; height: 34px; border-radius: 50%;
+    display: inline-flex; align-items: center; justify-content: center;
+    font-weight: 700; font-size: .85rem; flex-shrink: 0;
+    background: var(--emerald-dim); color: var(--emerald);
+    border: 1px solid var(--emerald-border);
+  }
+
+  /* ── ROLE BADGES ─────────────────────────────── */
+  .role-pill {
+    display: inline-flex; align-items: center; gap: .3rem;
+    font-size: .72rem; font-weight: 700; padding: .25rem .65rem;
+    border-radius: 50px; letter-spacing: .03em; text-transform: uppercase;
+  }
+  .role-pill.rp-admin      { background: rgba(244,63,94,.12);   color: #f43f5e;  border: 1px solid rgba(244,63,94,.2); }
+  .role-pill.rp-doctor     { background: rgba(16,185,129,.12);  color: #10b981;  border: 1px solid rgba(16,185,129,.2); }
+  .role-pill.rp-pharmacist { background: rgba(168,85,247,.12);  color: #a855f7;  border: 1px solid rgba(168,85,247,.2); }
+  .role-pill.rp-superuser  { background: rgba(245,158,11,.12);  color: #f59e0b;  border: 1px solid rgba(245,158,11,.2); }
+
+  /* ── ACTION BUTTONS ──────────────────────────── */
+  .act-btn {
+    width: 30px; height: 30px; border-radius: 8px; border: none;
+    display: inline-flex; align-items: center; justify-content: center;
+    font-size: .82rem; cursor: pointer; transition: all .15s;
+  }
+  [data-bs-theme="dark"]  .act-btn { background: rgba(255,255,255,.06); color: rgba(255,255,255,.7); }
+  [data-bs-theme="light"] .act-btn { background: #f1f3f5; color: #495057; }
+  .act-btn:hover { opacity: .8; transform: scale(1.08); }
+  .act-btn.act-danger:hover { background: rgba(244,63,94,.15); color: #f43f5e; }
+  .act-btn.act-edit:hover   { background: rgba(59,130,246,.15); color: #3b82f6; }
+
+  /* ── EMPTY STATE ─────────────────────────────── */
+  .empty-state { text-align: center; padding: 3rem 1rem; opacity: .45; }
+  .empty-state i { font-size: 2.5rem; display: block; margin-bottom: .75rem; }
+
+  /* ── PAGINATION ──────────────────────────────── */
+  .pagination-wrap { display: flex; justify-content: center; padding: 1.25rem; }
+  .pagination-container { display: flex; gap: 6px; align-items: center; padding: 6px; border-radius: 12px; }
+  [data-bs-theme="dark"]  .pagination-container { background: rgba(255,255,255,.04); }
+  [data-bs-theme="light"] .pagination-container { background: #fff; box-shadow: 0 2px 8px rgba(0,0,0,.05); border: 1px solid #e9ecef; }
+  .page-link-custom { display: flex; align-items: center; justify-content: center; min-width: 34px; height: 34px; padding: 0 .5rem; text-decoration: none; font-weight: 600; font-size: .85rem; border-radius: 8px; transition: all 0.2s; }
+  [data-bs-theme="dark"]  .page-link-custom { color: rgba(255,255,255,.6); }
+  [data-bs-theme="light"] .page-link-custom { color: #495057; }
+  .page-link-custom:hover:not(.active):not(.disabled) { background: var(--emerald-dim); color: var(--emerald); }
+  .page-link-custom.active { background: var(--emerald); color: #fff; }
+  .page-link-custom.disabled { opacity: .35; cursor: not-allowed; }
+
+  /* ── MODAL OVERRIDES ─────────────────────────── */
+  [data-bs-theme="dark"] .modal-content  { background: #0d1b2e; border: 1px solid rgba(255,255,255,.1); }
+  [data-bs-theme="dark"] .modal-header,
+  [data-bs-theme="dark"] .modal-footer   { border-color: rgba(255,255,255,.07); }
+  [data-bs-theme="dark"] .form-control,
+  [data-bs-theme="dark"] .form-select    { background: rgba(255,255,255,.05); border-color: rgba(255,255,255,.1); color: inherit; }
+  [data-bs-theme="dark"] .form-control:focus,
+  [data-bs-theme="dark"] .form-select:focus { background: rgba(255,255,255,.07); border-color: var(--emerald); box-shadow: 0 0 0 .2rem rgba(16,185,129,.15); }
+  .form-label { font-size: .82rem; font-weight: 600; margin-bottom: .35rem; }
+</style>
+
+<div class="admin-wrap">
+
+  <!-- ── HEADER ─────────────────────────────────── -->
+  <div class="admin-header">
+    <div>
+      <h1 class="admin-title">
+        <i class="bi bi-shield-lock me-2" style="color:var(--emerald)"></i>IT Admin Panel
+      </h1>
+      <p class="admin-subtitle">Manage system users and their role assignments</p>
+    </div>
+    <button class="btn btn-sm fw-bold px-3" style="background:var(--emerald);color:#fff;" data-bs-toggle="modal" data-bs-target="#createUserModal">
+      <i class="bi bi-person-plus me-1"></i> Add User
+    </button>
+  </div>
+
+  <!-- ── STATS ROW ────────────────────────────────── -->
+  <div class="stat-grid">
+    <div class="stat-card">
+      <div class="stat-icon c-emerald"><i class="bi bi-people-fill"></i></div>
+      <div>
+        <div class="stat-val">{{ stats.total }}</div>
+        <div class="stat-lbl">Total Users</div>
+      </div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-icon c-emerald"><i class="bi bi-heart-pulse-fill"></i></div>
+      <div>
+        <div class="stat-val">{{ stats.doctor }}</div>
+        <div class="stat-lbl">Doctors</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── SEARCH BAR ─────────────────────────────────── -->
+  <div class="panel-card mb-3">
+    <div class="panel-head" style="border-bottom:none;">
+      <form method="get" class="d-flex gap-2 align-items-center flex-wrap" style="width:100%;">
+        <div class="flex-grow-1" style="max-width:300px;">
+          <input type="text" name="search" class="form-control form-control-sm" placeholder="Search by username or email..." value="{{ search_query|default:'' }}">
+        </div>
+        <button type="submit" class="btn btn-sm" style="background:var(--emerald);color:#fff;">
+          <i class="bi bi-search me-1"></i> Search
+        </button>
+        {% if search_query %}
+        <a href="{% url 'pdl:admin_dashboard' %}" class="btn btn-sm btn-outline-secondary">Reset</a>
+        {% endif %}
+      </form>
+    </div>
+  </div>
+
+  <!-- ── USERS TABLE ──────────────────────────────── -->
+  <div class="panel-card">
+    <div class="panel-head">
+      <h2 class="panel-head-title"><i class="bi bi-person-lines-fill me-2 opacity-50"></i>System Users</h2>
+      <span class="badge bg-secondary-subtle text-secondary fw-normal">{{ stats.total }} user{{ stats.total|pluralize }}</span>
+    </div>
+
+    {% if system_users %}
+    <div class="table-responsive">
+      <table class="admin-table">
+        <thead>
+          <tr>
+            <th style="width:42%">User</th>
+            <th style="width:18%">Role</th>
+            <th style="width:20%">Last Login</th>
+            <th style="width:10%">Status</th>
+            <th style="width:10%; text-align:right; padding-right:1.25rem">Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for u in system_users %}
+          <tr>
+            <!-- Name + Username -->
+            <td>
+              <div class="d-flex align-items-center gap-2">
+                <div class="u-avatar">{{ u.get_full_name|default:u.username|slice:":1"|upper }}</div>
+                <div>
+                  <div class="fw-semibold" style="font-size:.9rem;">
+                    {{ u.get_full_name|default:u.username }}
+                    {% if u.is_superuser %}<i class="bi bi-patch-check-fill text-warning ms-1" title="Superuser" style="font-size:.75rem;"></i>{% endif %}
+                  </div>
+                  <div style="font-size:.75rem; opacity:.45;">@{{ u.username }}{% if u.email %} · {{ u.email }}{% endif %}</div>
+                </div>
+              </div>
+            </td>
+
+            <!-- Role badge -->
+            <td>
+              {% if u.is_superuser %}
+                <span class="role-pill rp-superuser"><i class="bi bi-star-fill"></i> Superuser</span>
+              {% elif u.userprofile.role == 'admin' %}
+                <span class="role-pill rp-admin"><i class="bi bi-shield-fill"></i> Admin</span>
+              {% elif u.userprofile.role == 'doctor' %}
+                <span class="role-pill rp-doctor"><i class="bi bi-heart-pulse"></i> Doctor</span>
+              {% elif u.userprofile.role == 'pharmacist' %}
+                <span class="role-pill rp-pharmacist"><i class="bi bi-capsule"></i> Pharmacist</span>
+              {% else %}
+                <span class="role-pill rp-doctor"><i class="bi bi-person-badge"></i> User</span>
+              {% endif %}
+            </td>
+
+            <!-- Last login -->
+            <td style="opacity:.6; font-size:.82rem;">
+              {% if u.last_login %}{{ u.last_login|date:"M d, Y · H:i" }}{% else %}Never{% endif %}
+            </td>
+
+            <!-- Active -->
+            <td>
+              {% if u.is_active %}
+                <span class="badge bg-success-subtle text-success fw-normal px-2">Active</span>
+              {% else %}
+                <span class="badge bg-danger-subtle text-danger fw-normal px-2">Inactive</span>
+              {% endif %}
+            </td>
+
+            <!-- Actions -->
+            <td style="text-align:right; padding-right:1.25rem;">
+              <div class="d-flex gap-1 justify-content-end">
+                <!-- View history (exclude pharmacist) -->
+                {% if u.userprofile.role != 'pharmacist' %}
+                <a href="{% url 'pdl:admin_user_history' u.pk %}" class="act-btn" title="View Activity History" style="text-decoration:none;">
+                  <i class="bi bi-clock-history"></i>
+                </a>
+                {% endif %}
+                {% if not u.is_superuser %}
+                <button class="act-btn" style="color:#f59e0b;"
+                  title="Reset Password"
+                  data-bs-toggle="modal"
+                  data-bs-target="#resetPasswordModal"
+                  data-pk="{{ u.pk }}"
+                  data-name="{{ u.get_full_name|default:u.username }}">
+                  <i class="bi bi-key"></i>
+                </button>
+                <form method="post" action="{% url 'pdl:admin_delete_user' u.pk %}"
+                      onsubmit="return confirm('Delete {{ u.get_full_name|default:u.username }}? This cannot be undone.')">
+                  {% csrf_token %}
+                  <button type="submit" class="act-btn act-danger" title="Delete User">
+                    <i class="bi bi-trash"></i>
+                  </button>
+                </form>
+                {% else %}
+                <span style="font-size:.75rem; opacity:.35; padding-right:.25rem;">Protected</span>
+                {% endif %}
+              </div>
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+    
+    <!-- Pagination -->
+    {% if page_obj %}
+    <div class="pagination-wrap">
+      <div class="pagination-container">
+        {% if page_obj.has_previous %}
+          <a class="page-link-custom" href="?page=1{% if search_query %}&search={{ search_query }}{% endif %}">&laquo;&laquo;</a>
+          <a class="page-link-custom" href="?page={{ page_obj.previous_page_number }}{% if search_query %}&search={{ search_query }}{% endif %}">&laquo;</a>
+        {% else %}
+          <span class="page-link-custom disabled">&laquo;&laquo;</span>
+          <span class="page-link-custom disabled">&laquo;</span>
+        {% endif %}
+
+        {% for num in page_obj.paginator.page_range %}
+          {% if page_obj.number == num %}
+            <span class="page-link-custom active">{{ num }}</span>
+          {% elif num > page_obj.number|add:'-3' and num < page_obj.number|add:'3' %}
+            <a class="page-link-custom" href="?page={{ num }}{% if search_query %}&search={{ search_query }}{% endif %}">{{ num }}</a>
+          {% endif %}
+        {% endfor %}
+
+        {% if page_obj.has_next %}
+          <a class="page-link-custom" href="?page={{ page_obj.next_page_number }}{% if search_query %}&search={{ search_query }}{% endif %}">&raquo;</a>
+          <a class="page-link-custom" href="?page={{ page_obj.paginator.num_pages }}{% if search_query %}&search={{ search_query }}{% endif %}">&raquo;&raquo;</a>
+        {% else %}
+          <span class="page-link-custom disabled">&raquo;</span>
+          <span class="page-link-custom disabled">&raquo;&raquo;</span>
+        {% endif %}
+      </div>
+    </div>
+    {% endif %}
+    
+    {% else %}
+    <div class="empty-state">
+      <i class="bi bi-people"></i>
+      <div>No system users found.</div>
+      <button class="btn btn-sm mt-3" style="background:var(--emerald-dim);color:var(--emerald);"
+              data-bs-toggle="modal" data-bs-target="#createUserModal">
+        Add the first user
+      </button>
+    </div>
+    {% endif %}
+  </div>
+
+</div><!-- /admin-wrap -->
+
+
+<!-- ══════════════════════════════════════
+     MODAL: Create User
+══════════════════════════════════════ -->
+<div class="modal fade" id="createUserModal" tabindex="-1">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content">
+      <form method="post" action="{% url 'pdl:admin_create_user' %}">
+        {% csrf_token %}
+        <div class="modal-header">
+          <h5 class="modal-title fw-bold"><i class="bi bi-person-plus me-2"></i>Add New User</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+        </div>
+        <div class="modal-body">
+          <div class="row g-3">
+            <div class="col-6">
+              <label class="form-label">First Name</label>
+              <input name="first_name" type="text" class="form-control form-control-sm" placeholder="Juan">
+            </div>
+            <div class="col-6">
+              <label class="form-label">Last Name</label>
+              <input name="last_name" type="text" class="form-control form-control-sm" placeholder="Dela Cruz">
+            </div>
+            <div class="col-12">
+              <label class="form-label">Username <span class="text-danger">*</span></label>
+              <input name="username" type="text" class="form-control form-control-sm" placeholder="jdelacruz" required>
+            </div>
+            <div class="col-12">
+              <label class="form-label">Email</label>
+              <input name="email" type="email" class="form-control form-control-sm" placeholder="juan@facility.gov.ph">
+            </div>
+            <div class="col-6">
+              <label class="form-label">Password <span class="text-danger">*</span></label>
+              <input name="password" type="password" class="form-control form-control-sm" required>
+            </div>
+            <div class="col-6">
+              <label class="form-label">Role <span class="text-danger">*</span></label>
+              <select name="role" id="createRoleSelect" class="form-select form-select-sm" required>
+                <option value="admin">Admin</option>
+                <option value="doctor">Doctor / Nurse</option>
+              </select>
+            </div>
+
+            <!-- Doctor-only fields -->
+            <div id="doctorFields" class="col-12" style="display:none;">
+              <hr class="my-1" style="opacity:.15;">
+              <p class="small fw-bold mb-2" style="color:var(--emerald);">
+                <i class="bi bi-stethoscope me-1"></i>Physician Details
+              </p>
+              <div class="row g-2">
+                <div class="col-12">
+                  <label class="form-label">Specialty <span class="text-danger">*</span></label>
+                  <select name="specialty_id" class="form-select form-select-sm">
+                    <option value="">— Select specialty —</option>
+                    {% for s in specialties %}
+                    <option value="{{ s.pk }}">{{ s.name }}</option>
+                    {% endfor %}
+                  </select>
+                </div>
+                <div class="col-6">
+                  <label class="form-label">Phone Number</label>
+                  <input name="phone_number" type="text" class="form-control form-control-sm" placeholder="09XX-XXX-XXXX">
+                </div>
+                <div class="col-6">
+                  <label class="form-label">Employee Type</label>
+                  <select name="employee_type" class="form-select form-select-sm">
+                    <option value="full_time">Full Time</option>
+                    <option value="part_time">Part Time</option>
+                    <option value="contract">Contract</option>
+                  </select>
+                </div>
+                <div class="col-12">
+                  <label class="form-label">Address</label>
+                  <input name="address" type="text" class="form-control form-control-sm" placeholder="Street, City, Province">
+                </div>
+              </div>
+            </div>
+
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-sm btn-outline-secondary" data-bs-dismiss="modal">Cancel</button>
+          <button type="submit" class="btn btn-sm fw-bold px-4" style="background:var(--emerald);color:#fff;">
+            <i class="bi bi-person-check me-1"></i> Create User
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+
+<!-- ══════════════════════════════════════
+     MODAL: Reset Password
+══════════════════════════════════════ -->
+<div class="modal fade" id="resetPasswordModal" tabindex="-1">
+  <div class="modal-dialog modal-dialog-centered modal-sm">
+    <div class="modal-content">
+      <form method="post" id="resetPasswordForm" action="">
+        {% csrf_token %}
+        <div class="modal-header">
+          <h5 class="modal-title fw-bold"><i class="bi bi-key me-2"></i>Reset Password</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+        </div>
+        <div class="modal-body">
+          <p id="resetPasswordName" class="mb-3" style="font-size:.88rem; opacity:.65;"></p>
+          <div class="mb-3">
+            <label class="form-label">New Password <span class="text-danger">*</span></label>
+            <input type="password" name="new_password" id="newPassword" class="form-control form-control-sm" required minlength="8" placeholder="Min. 8 characters">
+          </div>
+          <div class="mb-0">
+            <label class="form-label">Confirm Password <span class="text-danger">*</span></label>
+            <input type="password" name="confirm_password" id="confirmPassword" class="form-control form-control-sm" required minlength="8" placeholder="Re-enter password">
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-sm btn-outline-secondary" data-bs-dismiss="modal">Cancel</button>
+          <button type="submit" class="btn btn-sm fw-bold px-4" style="background:#f59e0b;color:#fff;">
+            Reset Password
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+
+<script>
+  // Show/hide doctor fields based on role selection
+  const createRoleSelect = document.getElementById('createRoleSelect');
+  const doctorFields     = document.getElementById('doctorFields');
+  function toggleDoctorFields() {
+    doctorFields.style.display = createRoleSelect.value === 'doctor' ? 'block' : 'none';
+  }
+  createRoleSelect.addEventListener('change', toggleDoctorFields);
+
+  // Populate Reset Password modal
+  document.getElementById('resetPasswordModal').addEventListener('show.bs.modal', function (e) {
+    const btn   = e.relatedTarget;
+    const pk    = btn.dataset.pk;
+    const name  = btn.dataset.name;
+    const form  = document.getElementById('resetPasswordForm');
+    const label = document.getElementById('resetPasswordName');
+
+    form.action = `/pdl/admin-panel/users/${pk}/reset-password/`;
+    label.textContent = `Reset password for: ${name}`;
+    document.getElementById('newPassword').value = '';
+    document.getElementById('confirmPassword').value = '';
+  });
+</script>
+{% endblock %}

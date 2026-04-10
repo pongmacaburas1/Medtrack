@@ -1,0 +1,578 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en" data-bs-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Medtrack{% endblock %}</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons/font/bootstrap-icons.css">
+    <link rel="stylesheet" href="{% static 'css/styles.css' %}">
+
+    <style>
+      /* ── BASE ─────────────────────────────────────────── */
+      :root {
+        --nav-h: 60px;
+        --emerald: #10b981;
+        --emerald-dim: rgba(16,185,129,.15);
+        --emerald-border: rgba(16,185,129,.3);
+        --navy: #0b1d3a;
+      }
+      * { font-family: 'DM Sans', sans-serif; }
+
+      /* ── NAVBAR SHELL ─────────────────────────────────── */
+      .medtrack-nav {
+        height: var(--nav-h);
+        position: sticky; top: 0; z-index: 1030;
+        display: flex; align-items: center;
+        padding: 0 1.25rem;
+        border-bottom: 1px solid rgba(255,255,255,.07);
+        backdrop-filter: blur(16px);
+        -webkit-backdrop-filter: blur(16px);
+      }
+      /* dark mode nav bg */
+      [data-bs-theme="dark"]  .medtrack-nav { background: rgba(11,29,58,.92); }
+      [data-bs-theme="light"] .medtrack-nav { background: rgba(255,255,255,.92); border-bottom-color: rgba(0,0,0,.08); }
+
+      /* ── BRAND ────────────────────────────────────────── */
+      .nav-brand {
+        display: flex; align-items: center; gap: .55rem;
+        text-decoration: none; flex-shrink: 0; margin-right: 1.5rem;
+      }
+      .nav-brand img { height: 34px; }
+      .brand-name {
+        font-weight: 700; font-size: 1.05rem; letter-spacing: .01em;
+        color: var(--emerald);
+      }
+      .brand-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--emerald); margin-left: 2px; margin-bottom: 8px; display: inline-block; }
+
+      /* ── DIVIDER ──────────────────────────────────────── */
+      .nav-sep {
+        width: 1px; height: 24px; background: rgba(255,255,255,.12);
+        margin: 0 1rem; flex-shrink: 0;
+      }
+      [data-bs-theme="light"] .nav-sep { background: rgba(0,0,0,.12); }
+
+      /* ── NAV LINKS ────────────────────────────────────── */
+      .nav-links {
+        display: flex; align-items: center; gap: .1rem;
+        list-style: none; margin: 0; padding: 0; flex: 1;
+      }
+      .nav-links .nav-link {
+        display: flex; align-items: center; gap: .38rem;
+        padding: .38rem .7rem;
+        font-size: .84rem; font-weight: 500;
+        border-radius: .5rem;
+        color: inherit; text-decoration: none;
+        white-space: nowrap;
+        transition: background .18s, color .18s;
+        position: relative;
+      }
+      [data-bs-theme="dark"]  .nav-links .nav-link { color: rgba(255,255,255,.72); }
+      [data-bs-theme="light"] .nav-links .nav-link { color: rgba(11,29,58,.7); }
+      .nav-links .nav-link:hover,
+      .nav-links .nav-link.active {
+        background: var(--emerald-dim);
+        color: var(--emerald);
+      }
+      .nav-links .nav-link .nav-icon { font-size: .95rem; opacity: .8; }
+
+      /* active indicator */
+      .nav-links .nav-link.active::after {
+        content: "";
+        position: absolute; bottom: -1px; left: 20%; right: 20%;
+        height: 2px; border-radius: 2px;
+        background: var(--emerald);
+      }
+
+      /* ── DROPDOWN ─────────────────────────────────────── */
+      .nav-links .dropdown-menu {
+        border: 1px solid rgba(255,255,255,.08);
+        border-radius: .75rem;
+        padding: .5rem;
+        min-width: 190px;
+        box-shadow: 0 16px 40px rgba(0,0,0,.35);
+      }
+      [data-bs-theme="dark"]  .nav-links .dropdown-menu { background: #0f2040; }
+      [data-bs-theme="light"] .nav-links .dropdown-menu { background: #fff; border-color: rgba(0,0,0,.08); box-shadow: 0 8px 24px rgba(0,0,0,.1); }
+      .nav-links .dropdown-item {
+        display: flex; align-items: center; gap: .5rem;
+        border-radius: .5rem; padding: .5rem .75rem;
+        font-size: .84rem; font-weight: 500;
+        transition: background .15s, color .15s;
+      }
+      [data-bs-theme="dark"]  .nav-links .dropdown-item { color: rgba(255,255,255,.72); }
+      [data-bs-theme="light"] .nav-links .dropdown-item { color: #1e293b; }
+      .nav-links .dropdown-item:hover { background: var(--emerald-dim); color: var(--emerald); }
+      .nav-links .dropdown-divider { border-color: rgba(255,255,255,.08); }
+      [data-bs-theme="light"] .nav-links .dropdown-divider { border-color: rgba(0,0,0,.08); }
+
+      /* history badge */
+      .history-badge {
+        margin-left: auto;
+        background: var(--emerald-dim);
+        border: 1px solid var(--emerald-border);
+        color: var(--emerald);
+        font-size: .65rem; font-weight: 700; letter-spacing: .06em;
+        padding: .15rem .45rem; border-radius: 1rem;
+      }
+
+      /* ── RIGHT CONTROLS ───────────────────────────────── */
+      .nav-right {
+        display: flex; align-items: center; gap: .6rem;
+        margin-left: auto; flex-shrink: 0;
+      }
+
+      /* user pill */
+      .user-pill {
+        display: flex; align-items: center; gap: .55rem;
+        padding: .35rem .75rem .35rem .45rem;
+        border-radius: 2rem;
+        border: 1px solid var(--emerald-border);
+        background: var(--emerald-dim);
+        cursor: default;
+      }
+      .user-avatar {
+        width: 28px; height: 28px; border-radius: 50%;
+        background: linear-gradient(135deg, var(--emerald), #059669);
+        display: flex; align-items: center; justify-content: center;
+        font-size: .75rem; font-weight: 700; color: #fff; flex-shrink: 0;
+      }
+      .user-name { font-size: .82rem; font-weight: 600; color: var(--emerald); }
+
+      /* role chips */
+      .role-chip {
+        font-size: .65rem; font-weight: 700; letter-spacing: .06em;
+        padding: .2rem .55rem; border-radius: 1rem;
+      }
+      .role-admin  { background: #dc3545; color: #fff; }
+      .role-doctor { background: #0d6efd; color: #fff; }
+
+      /* icon buttons */
+      .nav-icon-btn {
+        width: 36px; height: 36px; border-radius: .5rem;
+        display: flex; align-items: center; justify-content: center;
+        border: 1px solid transparent;
+        background: transparent; cursor: pointer;
+        font-size: 1rem;
+        transition: background .18s, border-color .18s, color .18s;
+      }
+      [data-bs-theme="dark"]  .nav-icon-btn { color: rgba(255,255,255,.65); }
+      [data-bs-theme="light"] .nav-icon-btn { color: rgba(11,29,58,.65); }
+      .nav-icon-btn:hover {
+        background: var(--emerald-dim);
+        border-color: var(--emerald-border);
+        color: var(--emerald);
+      }
+
+      /* ── MOBILE DRAWER ────────────────────────────────── */
+      .mobile-menu-btn {
+        display: none;
+        width: 36px; height: 36px; border-radius: .5rem;
+        align-items: center; justify-content: center;
+        background: transparent; border: 1px solid rgba(255,255,255,.12);
+        color: rgba(255,255,255,.7); cursor: pointer; font-size: 1.1rem;
+        margin-left: auto;
+        transition: background .18s;
+      }
+      [data-bs-theme="light"] .mobile-menu-btn { border-color: rgba(0,0,0,.12); color: #374151; }
+      .mobile-menu-btn:hover { background: var(--emerald-dim); color: var(--emerald); border-color: var(--emerald-border); }
+
+      .mobile-drawer {
+        display: none;
+        position: fixed; top: var(--nav-h); left: 0; right: 0; bottom: 0;
+        z-index: 1029;
+        overflow-y: auto;
+        padding: 1rem;
+      }
+      [data-bs-theme="dark"]  .mobile-drawer { background: #0b1d3a; }
+      [data-bs-theme="light"] .mobile-drawer { background: #f8fafc; }
+      .mobile-drawer.open { display: block; }
+
+      .mobile-nav-link {
+        display: flex; align-items: center; gap: .6rem;
+        padding: .75rem 1rem; border-radius: .65rem;
+        font-weight: 500; font-size: .9rem;
+        text-decoration: none;
+        transition: background .15s, color .15s;
+        margin-bottom: .2rem;
+      }
+      [data-bs-theme="dark"]  .mobile-nav-link { color: rgba(255,255,255,.8); }
+      [data-bs-theme="light"] .mobile-nav-link { color: #1e293b; }
+      .mobile-nav-link:hover { background: var(--emerald-dim); color: var(--emerald); }
+      .mobile-section-label {
+        font-size: .68rem; font-weight: 700; letter-spacing: .1em;
+        color: var(--emerald); padding: .75rem 1rem .3rem;
+        text-transform: uppercase;
+      }
+      .mobile-divider { height: 1px; background: rgba(255,255,255,.07); margin: .75rem 0; }
+      [data-bs-theme="light"] .mobile-divider { background: rgba(0,0,0,.07); }
+
+      @media (max-width: 991px) {
+        .desktop-links { display: none !important; }
+        .mobile-menu-btn { display: flex !important; }
+        .user-name { display: none; }
+        .role-chip { display: none; }
+      }
+      @media (min-width: 992px) {
+        .mobile-menu-btn { display: none; }
+      }
+
+      /* ── FORM VALIDATION (kept from original) ─────────── */
+      .is-invalid { border-color: #dc3545 !important; }
+      .invalid-feedback { display: none; color: #dc3545; font-size: .875rem; }
+      .is-invalid + .invalid-feedback { display: block; }
+      .tab-has-error .bi::after {
+        content:""; display:inline-block;
+        width:8px; height:8px; border-radius:50%;
+        background:#dc3545; margin-left:.4rem; vertical-align:middle;
+      }
+      .tab-has-error { color:#dc3545 !important; }
+
+      /* ── FOOTER ───────────────────────────────────────── */
+      .site-footer {
+        border-top: 1px solid rgba(255,255,255,.06);
+        padding: 3rem 2rem 0;
+      }
+      [data-bs-theme="light"] .site-footer { border-top-color: rgba(0,0,0,.07); }
+      .footer-bottom {
+        margin-top: 2.5rem; padding: 1rem 2rem;
+        font-size: .8rem;
+        display: flex; align-items: center; justify-content: space-between;
+        flex-wrap: wrap; gap: .5rem;
+      }
+      [data-bs-theme="dark"]  .footer-bottom { background: rgba(0,0,0,.3); color: rgba(255,255,255,.4); }
+      [data-bs-theme="light"] .footer-bottom { background: rgba(0,0,0,.04); color: #64748b; }
+      .footer-badge {
+        background: var(--emerald-dim); border: 1px solid var(--emerald-border);
+        color: var(--emerald); font-size: .7rem; font-weight: 700;
+        letter-spacing: .08em; padding: .25rem .65rem; border-radius: 1rem;
+      }
+    </style>
+
+    <script>
+      var savedTheme = localStorage.getItem('theme') || 'dark';
+      document.documentElement.setAttribute('data-bs-theme', savedTheme);
+    </script>
+    {% block extra_css %}{% endblock %}
+</head>
+<body>
+
+{% if user.is_authenticated %}
+<!-- ═══════════════════════════════════════════════════════
+     NAVBAR
+════════════════════════════════════════════════════════ -->
+<nav class="medtrack-nav">
+
+  <!-- Brand -->
+  <a class="nav-brand" href="{% url 'pdl:login' %}">
+    <img src="{% static 'img/logo.png' %}" alt="MedTrack">
+    <span class="brand-name">MedTrack<span class="brand-dot"></span></span>
+  </a>
+
+  <div class="nav-sep d-none d-lg-block"></div>
+
+  <!-- Desktop Nav Links -->
+  <ul class="nav-links desktop-links">
+
+    <li>
+      <a class="nav-link" href="{% url 'pdl:login' %}">
+        <i class="bi bi-house nav-icon"></i> Home
+      </a>
+    </li>
+
+    <li>
+      <a class="nav-link" href="{% url 'consultations:consultation_calendar' %}">
+        <i class="bi bi-calendar3 nav-icon"></i> Calendar
+      </a>
+    </li>
+
+    <li>
+      <a class="nav-link" href="{% url 'pdl:pdl_list' %}">
+        <i class="bi bi-people nav-icon"></i> PDL List
+      </a>
+    </li>
+
+    <!-- Reports dropdown -->
+    <li class="dropdown">
+      <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+        <i class="bi bi-bar-chart nav-icon"></i> Reports
+      </a>
+      <ul class="dropdown-menu">
+        <li>
+          <a class="dropdown-item" href="{% url 'reports:health_monitoring_dashboard' %}">
+            <i class="bi bi-activity" style="color:#10b981;"></i> Health Monitoring Statistics
+          </a>
+        </li>
+        <li><hr class="dropdown-divider"></li>
+        <li>
+          <a class="dropdown-item" href="{% url 'reports:report_center' %}">
+            <i class="bi bi-file-earmark-bar-graph"></i> Consultation Reports
+          </a>
+        </li>
+        <li>
+          <a class="dropdown-item" href="{% url 'reports:health_conditions' %}">
+            <i class="bi bi-heart-pulse"></i> Health Conditions
+          </a>
+        </li>
+        <li>
+          <a class="dropdown-item" href="{% url 'reports:fast_moving_medications' %}">
+            <i class="bi bi-capsule"></i> Fast-Moving Medications
+          </a>
+        </li>
+        <li>
+          <a class="dropdown-item" href="{% url 'reports:inventory_report' %}">
+            <i class="bi bi-box-seam"></i> Inventory Report
+          </a>
+        </li>
+      </ul>
+    </li>
+
+    <!-- Medications dropdown -->
+    <li class="dropdown">
+      <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+        <i class="bi bi-capsule nav-icon"></i> Medications
+      </a>
+      <ul class="dropdown-menu">
+        <li>
+          <a class="dropdown-item" href="{% url 'medications:medication_list' %}">
+            <i class="bi bi-file-medical"></i> Prescriptions
+          </a>
+        </li>
+        <li>
+          <a class="dropdown-item" href="{% url 'medications:inventory_list' %}">
+            <i class="bi bi-box-seam"></i> Inventory
+          </a>
+        </li>
+      </ul>
+    </li>
+
+    <!-- History -->
+    <li>
+      <a class="nav-link" href="{% url 'consultations:consultation_history' %}">
+        <i class="bi bi-clock-history nav-icon"></i> History
+      </a>
+    </li>
+
+    <!-- User Guide -->
+    <li>
+      <a class="nav-link" href="{% url 'user_guide' %}">
+        <i class="bi bi-book nav-icon"></i> Guide
+      </a>
+    </li>
+
+    {% if user.is_superuser or user_role == 'admin' %}
+    <li>
+      <a class="nav-link" href="{% url 'pdl:admin_dashboard' %}">
+        <i class="bi bi-shield-lock nav-icon"></i> IT Admin
+      </a>
+    </li>
+    {% endif %}
+
+  </ul>
+
+  <!-- Right Controls -->
+  <div class="nav-right">
+
+    <!-- User pill (desktop) -->
+    <div class="user-pill d-none d-lg-flex">
+      <div class="user-avatar">{{ user.get_full_name|default:user.username|slice:":1"|upper }}</div>
+      <span class="user-name">{{ user.get_full_name|default:user.username }}</span>
+      <span class="role-chip {% if user.is_superuser or user_role == 'admin' %}role-admin{% elif user_role == 'doctor' %}role-doctor{% elif user_role == 'pharmacist' %}role-pharmacist{% else %}role-doctor{% endif %}">
+        {% if user.is_superuser %}ADMIN{% elif user_role == 'admin' %}ADMIN{% elif user_role == 'doctor' %}DOCTOR{% elif user_role == 'pharmacist' %}RX{% else %}USER{% endif %}
+      </span>
+    </div>
+
+    <!-- Theme toggle -->
+    <button id="themeToggle" class="nav-icon-btn" title="Toggle theme">
+      <i id="themeIcon" class="bi bi-moon"></i>
+    </button>
+
+    <!-- Mobile hamburger -->
+    <button class="mobile-menu-btn" id="mobileMenuBtn" aria-label="Menu">
+      <i class="bi bi-list" id="menuIcon"></i>
+    </button>
+
+  </div>
+</nav>
+
+<!-- ═══════════════════════════════════════════════════════
+     MOBILE DRAWER
+════════════════════════════════════════════════════════ -->
+<div class="mobile-drawer" id="mobileDrawer">
+
+  <!-- User info -->
+  <div class="user-pill mb-3" style="border-radius:.75rem; padding:.75rem 1rem;">
+    <div class="user-avatar">{{ user.get_full_name|default:user.username|slice:":1"|upper }}</div>
+    <div style="flex:1">
+      <div style="font-weight:700;font-size:.9rem;color:var(--emerald);">{{ user.get_full_name|default:user.username }}</div>
+      <div style="font-size:.75rem;opacity:.6;">
+        {% if user.is_superuser %}Administrator
+        {% elif user_role == 'admin' %}Administrator
+        {% elif user_role == 'doctor' %}Doctor
+        {% elif user_role == 'pharmacist' %}Pharmacist
+        {% else %}User{% endif %}
+      </div>
+    </div>
+    <span class="role-chip {% if user.is_superuser or user_role == 'admin' %}role-admin{% elif user_role == 'doctor' %}role-doctor{% elif user_role == 'pharmacist' %}role-pharmacist{% else %}role-doctor{% endif %}">
+      {% if user.is_superuser %}ADMIN{% elif user_role == 'admin' %}ADMIN{% elif user_role == 'doctor' %}DOC{% elif user_role == 'pharmacist' %}RX{% else %}USER{% endif %}
+    </span>
+  </div>
+
+  <div class="mobile-section-label">Navigation</div>
+
+  <a class="mobile-nav-link" href="{% url 'pdl:login' %}">
+    <i class="bi bi-house"></i> Home
+  </a>
+  <a class="mobile-nav-link" href="{% url 'consultations:consultation_calendar' %}">
+    <i class="bi bi-calendar3"></i> Consultation Calendar
+  </a>
+  <a class="mobile-nav-link" href="{% url 'pdl:pdl_list' %}">
+    <i class="bi bi-people"></i> PDL List
+  </a>
+  <a class="mobile-nav-link" href="{% url 'consultations:consultation_history' %}">
+    <i class="bi bi-clock-history"></i> History
+  </a>
+  <a class="mobile-nav-link" href="{% url 'user_guide' %}">
+    <i class="bi bi-book"></i> User Guide
+  </a>
+  {% if user.is_superuser or user_role == 'admin' %}
+  <a class="mobile-nav-link" href="{% url 'pdl:admin_dashboard' %}">
+    <i class="bi bi-shield-lock"></i> IT Admin
+  </a>
+  {% endif %}
+
+  <div class="mobile-section-label">Reports</div>
+  <a class="mobile-nav-link" href="{% url 'reports:health_monitoring_dashboard' %}" style="background:var(--emerald-dim);color:var(--emerald);">
+    <i class="bi bi-activity"></i> Health Monitoring Statistics
+  </a>
+  <a class="mobile-nav-link" href="{% url 'reports:report_center' %}">
+    <i class="bi bi-bar-chart"></i> Consultation Reports
+  </a>
+  <a class="mobile-nav-link" href="{% url 'reports:health_conditions' %}">
+    <i class="bi bi-heart-pulse"></i> Health Conditions
+  </a>
+
+  <div class="mobile-section-label">Medications</div>
+  <a class="mobile-nav-link" href="{% url 'medications:medication_list' %}">
+    <i class="bi bi-file-medical"></i> Prescriptions
+  </a>
+  <a class="mobile-nav-link" href="{% url 'medications:inventory_list' %}">
+    <i class="bi bi-box-seam"></i> Inventory
+  </a>
+
+</div>
+{% endif %}
+
+<!-- ── MESSAGES ───────────────────────────────────────── -->
+{% if messages %}
+<div class="container mt-3">
+  {% for message in messages %}
+  <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+    {{ message }}
+    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+  </div>
+  {% endfor %}
+</div>
+{% endif %}
+
+<!-- ── PAGE CONTENT ───────────────────────────────────── -->
+{% block content %}{% endblock %}
+<div class="container mb-5"></div>
+
+<!-- ═══════════════════════════════════════════════════════
+     FOOTER
+════════════════════════════════════════════════════════ -->
+{% if user.is_authenticated %}
+<footer class="site-footer">
+  <div class="container">
+    <div class="row g-4">
+
+      <div class="col-lg-5 col-md-12">
+        <div class="d-flex align-items-center gap-2 mb-3">
+          <img src="{% static 'img/logo.png' %}" alt="MedTrack" height="32">
+          <span style="font-weight:800;font-size:1.1rem;color:var(--emerald);">MedTrack</span>
+        </div>
+        <p style="font-size:.88rem;opacity:.6;line-height:1.75;max-width:380px;">
+          A centralized health monitoring platform for Persons Deprived of Liberty at
+          San Jose District Jail, BJMP — Occidental Mindoro.
+        </p>
+      </div>
+
+      <div class="col-lg-3 col-md-6">
+        <h6 style="font-weight:700;font-size:.78rem;letter-spacing:.1em;color:var(--emerald);margin-bottom:1rem;text-transform:uppercase;">Quick Links</h6>
+        <ul class="list-unstyled" style="font-size:.86rem;">
+          <li class="mb-2"><a href="{% url 'pdl:login' %}" class="text-decoration-none" style="opacity:.65;">Home</a></li>
+          <li class="mb-2"><a href="{% url 'consultations:consultation_calendar' %}" class="text-decoration-none" style="opacity:.65;">Consultation Calendar</a></li>
+          <li class="mb-2"><a href="{% url 'pdl:pdl_list' %}" class="text-decoration-none" style="opacity:.65;">PDL List</a></li>
+          <li class="mb-2"><a href="{% url 'medications:medication_list' %}" class="text-decoration-none" style="opacity:.65;">Prescriptions</a></li>
+          <li class="mb-2"><a href="{% url 'medications:inventory_list' %}" class="text-decoration-none" style="opacity:.65;">Inventory</a></li>
+        </ul>
+      </div>
+
+      <div class="col-lg-3 col-md-6">
+        <h6 style="font-weight:700;font-size:.78rem;letter-spacing:.1em;color:var(--emerald);margin-bottom:1rem;text-transform:uppercase;">Contact</h6>
+        <ul class="list-unstyled" style="font-size:.86rem;">
+          <li class="mb-2"><a href="mailto:support@medtrack.com" class="text-decoration-none" style="opacity:.65;">support@medtrack.com</a></li>
+          <li class="mb-2"><a href="tel:+1234567890" class="text-decoration-none" style="opacity:.65;">+1 234 567 890</a></li>
+          <li class="mb-2"><a href="#" class="text-decoration-none" style="opacity:.65;">Privacy Policy</a></li>
+          <li class="mb-2"><a href="#" class="text-decoration-none" style="opacity:.65;">Terms of Service</a></li>
+        </ul>
+      </div>
+
+    </div>
+  </div>
+
+  <div class="footer-bottom">
+    <span>© {% now "Y" %} San Jose District Jail — BJMP Health Monitoring System. All rights reserved.</span>
+    <span class="footer-badge">BJMP OFFICIAL</span>
+  </div>
+</footer>
+{% endif %}
+
+<!-- ── SCRIPTS ─────────────────────────────────────────── -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+  /* ── THEME TOGGLE ── */
+  const themeToggle = document.getElementById('themeToggle');
+  const themeIcon   = document.getElementById('themeIcon');
+  const html        = document.documentElement;
+
+  function applyTheme(t) {
+    html.setAttribute('data-bs-theme', t);
+    themeIcon.className = t === 'dark' ? 'bi bi-moon' : 'bi bi-sun';
+    localStorage.setItem('theme', t);
+  }
+  applyTheme(localStorage.getItem('theme') || 'dark');
+  themeToggle?.addEventListener('click', () => {
+    applyTheme(html.getAttribute('data-bs-theme') === 'dark' ? 'light' : 'dark');
+  });
+
+  /* ── MOBILE DRAWER ── */
+  const mobileMenuBtn = document.getElementById('mobileMenuBtn');
+  const mobileDrawer  = document.getElementById('mobileDrawer');
+  const menuIcon      = document.getElementById('menuIcon');
+
+  mobileMenuBtn?.addEventListener('click', () => {
+    const open = mobileDrawer.classList.toggle('open');
+    menuIcon.className = open ? 'bi bi-x-lg' : 'bi bi-list';
+  });
+
+  /* close drawer on link click */
+  mobileDrawer?.querySelectorAll('.mobile-nav-link').forEach(link => {
+    link.addEventListener('click', () => {
+      mobileDrawer.classList.remove('open');
+      menuIcon.className = 'bi bi-list';
+    });
+  });
+
+  /* ── ACTIVE NAV HIGHLIGHT ── */
+  document.querySelectorAll('.nav-links .nav-link, .mobile-nav-link').forEach(link => {
+    if (link.href === window.location.href) link.classList.add('active');
+  });
+</script>
+{% block extra_js %}{% endblock %}
+</body>
+</html>

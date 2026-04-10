@@ -1,0 +1,243 @@
+{% extends "base.html" %}
+
+{% block title %}Schedule Consultation{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+  <h1 class="h3">Schedule Consultation</h1>
+
+  {% if messages %}
+    {% for m in messages %}
+      <div class="alert alert-{{ m.tags }} mt-3">{{ m }}</div>
+    {% endfor %}
+  {% endif %}
+
+  <form method="post" novalidate>
+    {% csrf_token %}
+
+    <!-- Tabs -->
+    <ul class="nav nav-tabs mt-3" id="consultationTabs" role="tablist">
+      <li class="nav-item" role="presentation">
+        <button class="nav-link active" id="details-tab" data-bs-toggle="tab" data-bs-target="#details-pane" type="button" role="tab">Consultation Details</button>
+      </li>
+      <li class="nav-item" role="presentation">
+        <button class="nav-link" id="pmh-tab" data-bs-toggle="tab" data-bs-target="#pmh-pane" type="button" role="tab">Past Medical History</button>
+      </li>
+      <li class="nav-item" role="presentation">
+        <button class="nav-link" id="pea-tab" data-bs-toggle="tab" data-bs-target="#pea-pane" type="button" role="tab">Physical Exam on Arrival</button>
+      </li>
+      <li class="nav-item" role="presentation">
+        <button class="nav-link" id="tb-tab" data-bs-toggle="tab" data-bs-target="#tb-pane" type="button" role="tab">TB Screening</button>
+      </li>
+      <li class="nav-item" role="presentation">
+        <button class="nav-link" id="fr-tab" data-bs-toggle="tab" data-bs-target="#fr-pane" type="button" role="tab">Final Remarks</button>
+      </li>
+    </ul>
+
+    <div class="tab-content border border-top-0 p-3" id="consultationTabsContent">
+      <!-- ===== Details ===== -->
+      <div class="tab-pane fade show active" id="details-pane" role="tabpanel" aria-labelledby="details-tab">
+        <div class="row g-3">
+          <div class="col-lg-4 col-md-6">{{ form.consultation_date_date_only.label_tag }}{{ form.consultation_date_date_only }}{% if form.consultation_date_date_only.errors %}<div class="text-danger small">{{ form.consultation_date_date_only.errors }}</div>{% endif %}</div>
+          <div class="col-lg-4 col-md-6">{{ form.consultation_time_block.label_tag }}{{ form.consultation_time_block }}{% if form.consultation_time_block.errors %}<div class="text-danger small">{{ form.consultation_time_block.errors }}</div>{% endif %}</div>
+          <div class="col-lg-4 col-md-6">{{ form.pdl_profile.label_tag }}{{ form.pdl_profile }}{% if form.pdl_profile.errors %}<div class="text-danger small">{{ form.pdl_profile.errors }}</div>{% endif %}</div>
+          <div class="col-lg-4 col-md-6">
+
+<div class="col-md-6">
+  <label for="id_detention_room_number" class="form-label">Detention room (auto)</label>
+  <input type="text" id="id_detention_room_number" name="detention_room_number"
+         class="form-control" readonly>
+  <div class="form-text">Auto-filled from selected PDL profile.</div>
+</div>
+
+            
+          </div>
+          <div class="col-lg-4 col-md-6">{{ form.physician.label_tag }}{{ form.physician }}{% if form.physician.errors %}<div class="text-danger small">{{ form.physician.errors }}</div>{% endif %}</div>
+          <div class="col-lg-4 col-md-6">{{ form.reason.label_tag }}{{ form.reason }}{% if form.reason.errors %}<div class="text-danger small">{{ form.reason.errors }}</div>{% endif %}</div>
+          <div class="col-12">{{ form.notes.label_tag }}{{ form.notes }}{% if form.notes.errors %}<div class="text-danger small">{{ form.notes.errors }}</div>{% endif %}</div>
+          <div class="col-md-6 form-check ms-2">{{ form.is_an_emergency }} {{ form.is_an_emergency.label_tag }}</div>
+        </div>
+      </div>
+
+      <!-- ===== PMH ===== -->
+      <div class="tab-pane fade" id="pmh-pane" role="tabpanel" aria-labelledby="pmh-tab">
+        <div class="row g-3">
+          <div class="col-lg-4 col-md-6">{{ form.pmh_blood_type.label_tag }}{{ form.pmh_blood_type }}</div>
+          <div class="col-lg-4 col-md-6">{{ form.pmh_family_history.label_tag }}{{ form.pmh_family_history }}</div>
+          <div class="col-lg-4 col-md-6 form-check d-flex align-items-end">
+            {{ form.pmh_psychiatric_history }} {{ form.pmh_psychiatric_history.label_tag }}
+          </div>
+          <div class="col-lg-4 col-md-6">{{ form.pmh_psychiatric_when.label_tag }}{{ form.pmh_psychiatric_when }}</div>
+          <div class="col-lg-4 col-md-6 form-check d-flex align-items-end">
+            {{ form.pmh_psychiatric_facility }} {{ form.pmh_psychiatric_facility.label_tag }}
+          </div>
+          <div class="col-lg-4 col-md-6 form-check d-flex align-items-end">
+            {{ form.pmh_arv_treatment }} {{ form.pmh_arv_treatment.label_tag }}
+          </div>
+          <div class="col-12">{{ form.pmh_arv_details.label_tag }}{{ form.pmh_arv_details }}</div>
+          <div class="col-12">{{ form.pmh_vaccines.label_tag }}{{ form.pmh_vaccines }}</div>
+          <div class="col-lg-4 col-md-6 form-check d-flex align-items-end">
+            {{ form.pmh_alcohol_drinker }} {{ form.pmh_alcohol_drinker.label_tag }}
+          </div>
+          <div class="col-lg-4 col-md-6">{{ form.pmh_smoking.label_tag }}{{ form.pmh_smoking }}</div>
+          <div class="col-lg-4 col-md-6 form-check d-flex align-items-end">
+            {{ form.pmh_illicit_drugs }} {{ form.pmh_illicit_drugs.label_tag }}
+          </div>
+          <div class="col-lg-4 col-md-6 form-check d-flex align-items-end">
+            {{ form.pmh_poly_drug_use }} {{ form.pmh_poly_drug_use.label_tag }}
+          </div>
+
+          <div class="col-12">{{ form.pmh_pediatric_history.label_tag }}{{ form.pmh_pediatric_history }}</div>
+          <div class="col-12">{{ form.pmh_major_adult_illnesses.label_tag }}{{ form.pmh_major_adult_illnesses }}</div>
+          <div class="col-12">{{ form.pmh_major_surgeries.label_tag }}{{ form.pmh_major_surgeries }}</div>
+          <div class="col-12">{{ form.pmh_serious_injuries.label_tag }}{{ form.pmh_serious_injuries }}</div>
+          <div class="col-12">{{ form.pmh_limitations.label_tag }}{{ form.pmh_limitations }}</div>
+          <div class="col-12">{{ form.pmh_medication_history.label_tag }}{{ form.pmh_medication_history }}</div>
+          <div class="col-12">{{ form.pmh_transfusions_reactions.label_tag }}{{ form.pmh_transfusions_reactions }}</div>
+          <div class="col-12">{{ form.pmh_mental_emotional.label_tag }}{{ form.pmh_mental_emotional }}</div>
+          <div class="col-12">{{ form.pmh_allergies.label_tag }}{{ form.pmh_allergies }}</div>
+        </div>
+      </div>
+
+      <!-- ===== PEA ===== -->
+      <div class="tab-pane fade" id="pea-pane" role="tabpanel" aria-labelledby="pea-tab">
+        <div class="row g-3">
+          <div class="col-lg-4 col-md-6">{{ form.pea_temperature.label_tag }}{{ form.pea_temperature }}</div>
+          <div class="col-lg-4 col-md-6">{{ form.pea_blood_pressure.label_tag }}{{ form.pea_blood_pressure }}</div>
+          <div class="col-lg-4 col-md-6">{{ form.pea_heart_rate.label_tag }}{{ form.pea_heart_rate }}</div>
+          <div class="col-lg-4 col-md-6">{{ form.pea_rr.label_tag }}{{ form.pea_rr }}</div>
+          <div class="col-lg-4 col-md-6">{{ form.pea_height.label_tag }}{{ form.pea_height }}</div>
+          <div class="col-lg-4 col-md-6">{{ form.pea_weight.label_tag }}{{ form.pea_weight }}</div>
+          <div class="col-lg-4 col-md-6">{{ form.pea_bmi.label_tag }}{{ form.pea_bmi }}</div>
+
+          <div class="col-lg-6 col-md-6 form-check">{{ form.pea_general_appearance }} {{ form.pea_general_appearance.label_tag }}</div>
+          <div class="col-lg-6 col-md-6 form-check">{{ form.pea_head_eyes_ears_nose_throat }} {{ form.pea_head_eyes_ears_nose_throat.label_tag }}</div>
+          <div class="col-lg-6 col-md-6 form-check">{{ form.pea_neck }} {{ form.pea_neck.label_tag }}</div>
+          <div class="col-lg-6 col-md-6 form-check">{{ form.pea_chest_lungs }} {{ form.pea_chest_lungs.label_tag }}</div>
+          <div class="col-lg-6 col-md-6 form-check">{{ form.pea_heart }} {{ form.pea_heart.label_tag }}</div>
+          <div class="col-lg-6 col-md-6 form-check">{{ form.pea_abdomen }} {{ form.pea_abdomen.label_tag }}</div>
+          <div class="col-lg-6 col-md-6 form-check">{{ form.pea_genito_urinary }} {{ form.pea_genito_urinary.label_tag }}</div>
+          <div class="col-lg-6 col-md-6 form-check">{{ form.pea_musculoskeletal }} {{ form.pea_musculoskeletal.label_tag }}</div>
+          <div class="col-lg-6 col-md-6 form-check">{{ form.pea_extremities }} {{ form.pea_extremities.label_tag }}</div>
+
+          <div class="col-12">{{ form.pea_other_findings.label_tag }}{{ form.pea_other_findings }}</div>
+        </div>
+      </div>
+
+      <!-- ===== TB ===== -->
+      <div class="tab-pane fade" id="tb-pane" role="tabpanel" aria-labelledby="tb-tab">
+        <div class="row g-3">
+          <div class="col-lg-6 col-md-6 form-check">{{ form.tb_unexplained_cough }} {{ form.tb_unexplained_cough.label_tag }}</div>
+          <div class="col-lg-6 col-md-6 form-check">{{ form.tb_bmi_less_18_5 }} {{ form.tb_bmi_less_18_5.label_tag }}</div>
+          <div class="col-lg-6 col-md-6 form-check">{{ form.tb_blood_streaked_sputum }} {{ form.tb_blood_streaked_sputum.label_tag }}</div>
+          <div class="col-lg-6 col-md-6 form-check">{{ form.tb_cxr_suggestive }} {{ form.tb_cxr_suggestive.label_tag }}</div>
+          <div class="col-lg-6 col-md-6 form-check">{{ form.tb_previous_treatment }} {{ form.tb_previous_treatment.label_tag }}</div>
+          <div class="col-lg-6 col-md-6 form-check">{{ form.tb_exposure }} {{ form.tb_exposure.label_tag }}</div>
+
+          <div class="col-lg-4 col-md-6">{{ form.tb_remarks.label_tag }}{{ form.tb_remarks }}</div>
+        </div>
+      </div>
+
+      <!-- ===== Final Remarks ===== -->
+      <div class="tab-pane fade" id="fr-pane" role="tabpanel" aria-labelledby="fr-tab">
+        <div class="row g-3">
+          <div class="col-lg-4 col-md-6">{{ form.fr_conclusion.label_tag }}{{ form.fr_conclusion }}</div>
+          <div class="col-12">{{ form.fr_other_impressions.label_tag }}{{ form.fr_other_impressions }}</div>
+          <div class="col-lg-4 col-md-6">{{ form.fr_recommendation.label_tag }}{{ form.fr_recommendation }}</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="d-flex gap-2 mt-3">
+      <a href="{% url 'consultations:consultation_calendar' %}" class="btn btn-outline-secondary">Back to Calendar</a>
+      <button type="submit" class="btn btn-primary">
+        <i class="bi bi-plus-circle me-2"></i> Save Consultation
+      </button>
+    </div>
+  </form>
+</div>
+<script>
+(function () {
+  function wireUp() {
+    const sel = document.getElementById('pdlSelect');           // make sure this ID truly exists
+    const roomBadge = document.getElementById('pdl-room-display'); // optional
+    const roomInput = document.getElementById('id_detention_room_number'); // your readonly input
+
+    if (!sel) { console.log('pdlSelect not found'); return; }
+    console.log('pdlSelect found');
+
+    sel.addEventListener('change', async function (e) {
+      const val = e.target.value;
+      console.log('pdl change ->', val);
+      if (!val) {
+        if (roomBadge) roomBadge.textContent = '—';
+        if (roomInput) roomInput.value = '';
+        return;
+      }
+
+      const url = `/pdl/api/pdl/${encodeURIComponent(val)}/latest-room/`;
+      console.log('fetching:', url);
+
+      try {
+        const resp = await fetch(url, {
+          credentials: 'same-origin',
+          cache: 'no-store',
+          headers: { 'Accept': 'application/json' }
+        });
+
+        console.log('status:', resp.status, 'redirected:', resp.redirected, 'finalURL:', resp.url);
+        const ct = resp.headers.get('content-type') || '';
+        const text = await resp.text();
+        console.log('content-type:', ct);
+        console.log('raw body ->', text);
+
+        if (!resp.ok) {
+          console.warn('non-OK response');
+          return;
+        }
+
+        // If we got HTML (e.g., login page), bail clearly
+        if (!ct.includes('application/json')) {
+          console.warn('Expected JSON but got', ct);
+          return;
+        }
+
+        let data;
+        try {
+          data = JSON.parse(text);
+        } catch (e) {
+          console.error('JSON parse error:', e);
+          return;
+        }
+
+        console.log('parsed data:', data);
+
+        // Use the key your API returns
+        const rn = (data && data.room_number) ? data.room_number : '';
+
+        if (roomBadge) roomBadge.textContent = rn || '—';
+        if (roomInput) {
+          roomInput.value = rn || 'No Room Data';
+          roomInput.dispatchEvent(new Event('change', { bubbles: true }));
+        }
+      } catch (err) {
+        console.error('room fetch failed:', err);
+      }
+    });
+
+    // prime
+    if (sel.value) sel.dispatchEvent(new Event('change', { bubbles: true }));
+  }
+
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', wireUp);
+  } else {
+    wireUp();
+  }
+  document.addEventListener('turbo:load', wireUp);
+  document.addEventListener('htmx:afterSettle', wireUp);
+})();
+</script>
+
+
+{% endblock %}

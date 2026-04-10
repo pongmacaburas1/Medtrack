@@ -1,0 +1,104 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Home - Medtrack{% endblock %}
+
+{% block content %}
+<style>
+  /* Full-page hero background with dark overlay */
+  .page-hero {
+    position: relative;
+    min-height: calc(100vh - 0px); /* adjust if your base has a fixed navbar height */
+    background: url("{% static 'img/background.png' %}") center center / cover no-repeat fixed;
+    padding-bottom: 16rem !important;
+  }
+  .page-hero::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.5); /* overlay strength */
+  }
+  .page-hero .hero-content {
+    position: relative; /* above overlay */
+    z-index: 1;
+    color: #fff;
+  }
+
+  /* Make translucent cards readable on dark background */
+  .glass-card {
+    background: rgba(255, 255, 255, 0.85) !important;
+    backdrop-filter: blur(2px);
+    -webkit-backdrop-filter: blur(2px);
+  }
+
+  /* Optional: ensure logo shows nicely on dark */
+  .hero-logo {
+    filter: drop-shadow(0 2px 6px rgba(0,0,0,.4));
+  }
+
+  .headline-overlay {
+    display: inline-block;
+    background: rgba(0, 0, 0, 0.45); /* slightly darker than the page overlay */
+    color: #fff;
+    padding: 0.75rem 1rem;
+    border-radius: .5rem;
+    box-shadow: 0 .5rem 1rem rgba(0,0,0,.25);
+    backdrop-filter: blur(1px);
+    -webkit-backdrop-filter: blur(1px);
+  }
+  .headline-overlay .lead { margin-bottom: 0; }
+
+</style>
+
+<div class="page-hero d-flex align-items-start align-items-md-center">
+  <div class="container hero-content py-4 py-md-5">
+
+    <div class="text-center mx-5 my-3">
+      <img src="{% static 'img/logo.png' %}" alt="MedTrack Logo" width="150" height="auto" class="hero-logo">
+
+<div class="headline-overlay mt-3 mb-5">
+  <h2 class="m-0">Bureau of Jail Management and Penology</h2>
+  <p class="fs-6 pt-2 mx-1">
+    Health Monitoring System for Person Deprived of Liberty (PDL) in San Jose District Jail (BJMP) San Jose, Occidental Mindoro
+  </p>
+</div>
+
+      <!-- <div class="row mt-4">
+        <div class="col-md-2"></div>
+
+        <div class="col-md-4">
+          <div class="card py-5 h-100 shadow glass-card">
+            <div class="card-body text-center">
+              <i class="bi bi-shield-lock display-4"></i>
+              <h5 class="card-title mt-3">Prison Admin Dashboard</h5>
+              <p class="card-text text-muted mb-3">
+                Manage users, schedules, and system settings from the admin panel.
+              </p>
+              <a href="{% url 'pdl:pdl_list' %}" class="btn btn-primary">Go to Admin Dashboard</a>
+            </div>
+          </div>
+        </div> -->
+
+        <!-- <div class="col-md-4 mt-3 mt-md-0">
+          <div class="card py-5 h-100 shadow glass-card">
+            <div class="card-body text-center">
+              <i class="bi bi-capsule-pill display-4"></i>
+              <h5 class="card-title mt-3">Doctor Dashboard</h5>
+              <p class="card-text text-muted mb-3">
+                View and manage your appointments and patient records.
+              </p>
+              <a href="{% url 'consultations:doctor_dashboard' %}" class="btn btn-primary">Go to Doctor Dashboard</a>
+            </div>
+          </div>
+        </div> -->
+
+        add login form here -->
+        <!-- <div class="col-md-2"></div> -->
+
+        <div class="col-md-2"></div>
+      </div>
+    </div>
+
+  </div>
+</div>
+{% endblock %}

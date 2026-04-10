@@ -1,0 +1,116 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&display=swap');
+
+
+/* Apply Inter font globally */
+body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Inter', Roboto, 'Helvetica Neue', Arial, sans-serif;
+    padding-top: 10px; /* Ensure proper spacing below navbar */
+}
+
+
+.no-outline {
+    border: none !important;
+    box-shadow: none !important;
+    outline: none !important;
+}
+
+.no-outline:focus {
+    border: none !important;
+    box-shadow: none !important;
+    outline: none !important;
+}
+
+/* Sticky navbar styles */
+.navbar.sticky-top {
+    position: sticky;
+    top: 0;
+    z-index: 1030;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+}
+
+/* Ensure proper spacing below navbar */
+body {
+    padding-top: 10px;
+}
+
+/* Adjust frosted effect for sticky navbar */
+[data-bs-theme="dark"] .navbar.sticky-top {
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
+}
+
+/* Adjust frosted effect for sticky navbar */
+[data-bs-theme="dark"] .navbar.sticky-top {
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
+}
+
+/* Frosted glass effect for modals */
+.modal-content {
+    background-color: rgba(255, 255, 255, 0.75) !important;
+    backdrop-filter: blur(10px) !important;
+    -webkit-backdrop-filter: blur(15px) !important;
+    border: 1px solid rgba(255, 255, 255, 0.18) !important;
+    box-shadow: 0 1px 3px 0 rgba(255, 255, 255, 0.1) !important;
+    border-radius: 12px !important;
+}
+
+.modal-header {
+    border-bottom: 1px solid rgba(0, 0, 0, 0.1) !important;
+}
+
+.modal-footer {
+    border-top: 1px solid rgba(0, 0, 0, 0.1) !important;
+}
+
+/* Dark mode frosted glass modal */
+[data-bs-theme="dark"] .modal-content {
+    background-color: rgba(33, 37, 41, 0.7) !important;
+    border: 1px solid rgba(255, 255, 255, 0.08) !important;
+}
+
+[data-bs-theme="dark"] .modal-header {
+    border-bottom: 1px solid rgba(255, 255, 255, 0.08) !important;
+}
+
+[data-bs-theme="dark"] .modal-footer {
+    border-top: 1px solid rgba(255, 255, 255, 0.08) !important;
+}
+
+/* Optional: enhance modal backdrop */
+[data-bs-theme="dark"] .modal-backdrop {
+    backdrop-filter: blur(30px);
+    -webkit-backdrop-filter: blur(30px);
+    background-color: rgba(0, 0, 0, 0.9);
+}
+
+[data-bs-theme="light"] .modal-backdrop {
+    backdrop-filter: blur(15px);
+    -webkit-backdrop-filter: blur(15px);
+    background-color: rgba(0, 0, 0, 0.9);
+}
+
+.shadow-sm {
+    box-shadow: 0 2px 8px rgba(255, 255, 255, 0.05), 0 4px 16px rgba(0, 0, 0, 0.15) !important;
+    backdrop-filter: blur(12px) saturate(180%);
+    -webkit-backdrop-filter: blur(12px) saturate(180%);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+  }
+
+/* Frosted styling for input controls in modals */
+.modal-content input,
+.modal-content textarea,
+.modal-content select {
+    background-color: rgba(255, 255, 255, 0.75) !important;
+    backdrop-filter: blur(8px) !important;
+    -webkit-backdrop-filter: blur(8px) !important;
+    border: 1px solid rgba(0, 0, 0, 0.1) !important;
+    padding: 8px 12px;
+    color: #000 !important;
+}
+
+[data-bs-theme="dark"] .modal-content input,
+[data-bs-theme="dark"] .modal-content textarea,
+[data-bs-theme="dark"] .modal-content select {
+    background-color: rgba(33, 37, 41, 0.7) !important;
+    border: 1px solid rgba(255, 255, 255, 0.08) !important;
+    color: #fff !important;
+}

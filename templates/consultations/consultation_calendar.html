@@ -1,0 +1,704 @@
+{% extends "base.html" %}
+
+{% block title %}
+Consultation Calendar
+{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <h1 class="h3 text-center">Consultation Calendar - {{ month_name }} {{ year }}</h1>
+    <div class="d-flex justify-content-between mb-3">
+        <a href="?month={{ prev_month }}&year={{ prev_year }}" class="btn btn-outline-primary">&laquo; Previous</a>
+        <a href="?month={{ next_month }}&year={{ next_year }}" class="btn btn-outline-primary">Next &raquo;</a>
+    </div>
+
+    <div class="table">
+        <table class="table table-bordered">
+            <thead>
+                <tr>
+                    <th>Monday</th>
+                    <th>Tuesday</th>
+                    <th>Wednesday</th>
+                    <th>Thursday</th>
+                    <th>Friday</th>
+                    <th>Saturday</th>
+                    <th>Sunday</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for week in calendar_data|slice:7 %}
+                <tr>
+                    {% for day in week %}
+                    <td class="position-relative {% if not day.day %}bg-secondary opacity-50{% endif %}">
+                        {% if day.day %}
+                        <h5 class="fw-semibold">{{ day.day }}</h5>
+                        <div>
+                            <div class="position-absolute top-0 end-0 me-2 mt-2">
+                               <a href="{% url 'consultations:consultation_create' %}?date={{year}}-{{month}}-{{ day.day }}"
+                                    class="text-muted" title="Add consultation for this date">
+                                    <i class="bi bi-plus fs-5"></i>
+                                    </a>
+                                    
+
+                            </div>
+                            
+                            {% if day.consultations %}
+                            
+                                {% for consultation in day.consultations %}
+                                <div class="card p-2 small mb-2" data-bs-toggle="modal" data-bs-target="#consultationModal{{ consultation.id }}">
+                                    <strong>{{ consultation.get_consultation_time_block_display }}</strong>
+                                    {{ consultation.pdl_profile }}
+                                    <span class="d-block text-muted small">  {{ consultation.physician }} </span>
+                                    {% if consultation.status != "canceled" %}
+                                    <span class="text-success"><i class="bi bi-circle-fill small pe-2"></i>{{ consultation.status|capfirst }}</span>
+                                    {% else %}
+                                    <span class="text-danger"><i class="bi bi-circle-fill small pe-2"></i>{{ consultation.status|capfirst }}</span>
+                                    {% endif %}
+                                </div>
+                                
+                                <!-- Modal -->
+                                <div class="modal fade" id="consultationModal{{ consultation.id }}" tabindex="-1" aria-labelledby="consultationModalLabel{{ consultation.id }}" aria-hidden="true">
+                                    <div class="modal-dialog">
+                                        <div class="modal-content">
+                                            <div class="modal-header">
+                                                <h5 class="modal-title" id="consultationModalLabel{{ consultation.id }}">Consultation Details</h5>
+                                                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                            </div>
+                                            <div class="modal-body p-4">
+                                                <div class="d-flex align-items-start mb-3">
+                                                    <i class="bi bi-clock text-secondary me-3 fs-5"></i>
+                                                    <div>
+                                                        <p class="small text-muted mb-0">Time</p>
+                                                        <p class="mb-0">{{ consultation.get_consultation_time_block_display }}</p>
+                                                    </div>
+                                                </div>
+                                                
+                                                <div class="d-flex align-items-start mb-3">
+                                                    <i class="bi bi-person-circle text-secondary me-3 fs-5"></i>
+                                                    <div>
+                                                        <p class="small text-muted mb-0">PDL</p>
+                                                        <p class="mb-0">{{ consultation.pdl_profile }}</p>
+                                                    </div>
+                                                </div>
+                                                
+                                                
+                                                <div class="d-flex align-items-start mb-3">
+                                                    <i class="bi bi-person-badge text-secondary me-3 fs-5"></i>
+                                                    <div>
+                                                        <p class="small text-muted mb-0">Physician</p>
+                                                        <p class="mb-0">{{ consultation.physician }}</p>
+                                                    </div>
+                                                </div>
+                                                
+                                                <div class="d-flex align-items-start mb-3">
+                                                    <i class="bi bi-activity text-secondary me-3 fs-5"></i>
+                                                    <div>
+                                                        <p class="small text-muted mb-0">Status</p>
+                                                        <p class="mb-0">{{ consultation.status|capfirst }}</p>
+                                                    </div>
+                                                </div>
+                                                
+                                                <div class="d-flex align-items-start">
+                                                    <i class="bi bi-journal-text text-secondary me-3 fs-5"></i>
+                                                    <div>
+                                                        <p class="small text-muted mb-0">Notes</p>
+                                                        <p class="mb-0">{{ consultation.notes }}</p>
+                                                    </div>
+                                                </div>
+                                            </div>
+<div class="modal-footer">
+  <!-- Always allow printing -->
+  <a href="{% url 'consultations:consultation_printable' consultation.id %}" class="btn btn-success">
+    <i class="bi bi-printer"></i> Print
+  </a>
+
+  <!-- Keep other actions conditional -->
+  {% if consultation.status != "canceled" and consultation.status != "completed" %}
+    <a href="{% url 'consultations:reschedule_consultation' consultation.id %}" class="btn btn-warning">
+      <i class="bi bi-arrow-clockwise"></i> Reschedule
+    </a>
+    <a href="{% url 'consultations:complete_consultation' consultation.id %}" class="btn btn-primary">
+      <i class="bi bi-check-circle"></i> Complete
+    </a>
+    <a href="{% url 'consultations:cancel_consultation' consultation.id %}" class="btn btn-danger">
+      <i class="bi bi-x-circle"></i> Cancel
+    </a>
+  {% endif %}
+</div>
+                                        </div>
+                                    </div>
+                                </div>
+                                {% endfor %}
+                            {% else %}
+                                <p class="small text-muted">No consultations scheduled.</p>
+                            {% endif %}
+                        </div>
+
+                        <!-- Add Consultation Button -->
+                       
+                        {% endif %}
+                    </td>
+                    {% endfor %}
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+<div class="modal fade" id="addConsultationModal" tabindex="-1" aria-labelledby="addConsultationModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-xl modal-dialog-scrollable modal-fullscreen-md-down">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="addConsultationModalLabel">
+          <i class="bi bi-calendar-plus pe-2"></i>Add Consultation
+        </h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+
+      <div class="modal-body p-4">
+        <form method="post" action="{% url 'consultations:create_consultation' %}" id="addConsultationForm" novalidate>
+        {% csrf_token %}
+        <div id="addConsultationError" class="alert alert-danger d-none" role="alert"></div>
+          <!-- Tabs -->
+          <ul class="nav nav-tabs" id="consultationTabs" role="tablist">
+            <li class="nav-item" role="presentation">
+              <button class="nav-link active" id="details-tab" data-bs-toggle="tab" data-bs-target="#details-pane" type="button" role="tab" aria-controls="details-pane" aria-selected="true">
+                Consultation Details
+              </button>
+            </li>
+            <li class="nav-item" role="presentation">
+              <button class="nav-link" id="pmh-tab" data-bs-toggle="tab" data-bs-target="#pmh-pane" type="button" role="tab" aria-controls="pmh-pane" aria-selected="false">
+                Past Medical History
+              </button>
+            </li>
+            <li class="nav-item" role="presentation">
+              <button class="nav-link" id="pea-tab" data-bs-toggle="tab" data-bs-target="#pea-pane" type="button" role="tab" aria-controls="pea-pane" aria-selected="false">
+                Physical Exam on Arrival
+              </button>
+            </li>
+            <li class="nav-item" role="presentation">
+              <button class="nav-link" id="tb-tab" data-bs-toggle="tab" data-bs-target="#tb-pane" type="button" role="tab" aria-controls="tb-pane" aria-selected="false">
+                TB Screening
+              </button>
+            </li>
+            <li class="nav-item" role="presentation">
+              <button class="nav-link" id="fr-tab" data-bs-toggle="tab" data-bs-target="#fr-pane" type="button" role="tab" aria-controls="fr-pane" aria-selected="false">
+                Final Remarks
+              </button>
+            </li>
+          </ul>
+
+          <div class="tab-content pt-3" id="consultationTabsContent">
+
+            <!-- ================= Details ================= -->
+            <div class="tab-pane fade show active" id="details-pane" role="tabpanel" aria-labelledby="details-tab" tabindex="0">
+              <div class="row g-3">
+                <div class="col-lg-4 col-md-6">
+                  <label class="form-label small text-muted">Date</label>
+                  <div class="input-group">
+                    <span class="input-group-text"><i class="bi bi-calendar"></i></span>
+                    <input type="date" class="form-control" name="date" id="consultationDate" required>
+                  </div>
+                </div>
+
+                <div class="col-lg-4 col-md-6">
+                  <label class="form-label small text-muted">Time</label>
+                  <div class="input-group">
+                    <span class="input-group-text"><i class="bi bi-clock"></i></span>
+                    <select class="form-select" name="time" id="timeSelect" required data-url="{% url 'consultations:consultation_time_block_list_api' %}">
+                      <option value="">Loading Times...</option>
+                    </select>
+                  </div>
+                  <div class="form-text small mb-2">Office hours: 8:00 AM - 5:00 PM</div>
+                </div>
+
+                <div class="col-lg-4 col-md-6">
+                  <label class="form-label small text-muted">PDL</label>
+                  <div class="input-group">
+                    <span class="input-group-text"><i class="bi bi-person-circle"></i></span>
+                    <select class="form-select" name="pdl" id="pdlSelect" required data-url="{% url 'consultations:pdl_list_api' %}">
+                      <option value="">Loading PDLs...</option>
+                    </select>
+                  </div>
+                </div>
+
+                <div class="col-lg-4 col-md-6">
+                  <label class="form-label small text-muted">Location</label>
+                  <div class="input-group">
+                    <span class="input-group-text"><i class="bi bi-geo-alt"></i></span>
+                    <select class="form-select" name="location" id="locationSelect" required data-url="{% url 'consultations:location_list_api' %}">
+                      <option value="">Loading Locations...</option>
+                    </select>
+                  </div>
+                </div>
+
+                <div class="col-lg-4 col-md-6">
+                  <label class="form-label small text-muted">Physician</label>
+                  <div class="input-group">
+                    <span class="input-group-text"><i class="bi bi-person-badge"></i></span>
+                    <select class="form-select" name="physician" id="physicianSelect" required data-url="{% url 'consultations:physician_list_api' %}">
+                      <option value="">Loading Physicians...</option>
+                    </select>
+                  </div>
+                </div>
+
+                <div class="col-lg-4 col-md-6">
+                  <label class="form-label small text-muted">Reason</label>
+                  <div class="input-group">
+                    <span class="input-group-text"><i class="bi bi-chat-quote"></i></span>
+                    <select class="form-select" name="reason" id="reasonSelect" required data-url="{% url 'consultations:consultation_reason_list_api' %}">
+                      <option value="">Loading Reasons...</option>
+                    </select>
+                  </div>
+                </div>
+
+                <div class="col-12">
+                  <label class="form-label small text-muted">Notes</label>
+                  <div class="input-group">
+                    <span class="input-group-text"><i class="bi bi-journal-text"></i></span>
+                    <textarea class="form-control" name="notes" id="notesField" rows="3" placeholder="Add any additional notes or important information..."></textarea>
+                  </div>
+                </div>
+
+                <div class="col-md-6">
+                  <div class="form-check mt-1">
+                    <input type="checkbox" class="form-check-input" name="is_an_emergency" id="isEmergency">
+                    <label class="form-check-label" for="isEmergency">Emergency case</label>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- ================= PMH ================= -->
+            <div class="tab-pane fade" id="pmh-pane" role="tabpanel" aria-labelledby="pmh-tab" tabindex="0">
+              <div class="row g-3">
+                <div class="col-lg-4 col-md-6">
+                  <label class="form-label">Blood type</label>
+                  <select class="form-select" name="pmh_blood_type" id="pmh_blood_type">
+                    <option value="">—</option>
+                    <option>A+</option><option>A-</option>
+                    <option>B+</option><option>B-</option>
+                    <option>AB+</option><option>AB-</option>
+                    <option>O+</option><option>O-</option>
+                  </select>
+                </div>
+
+                <div class="col-lg-4 col-md-6">
+                  <label class="form-label">Family history</label>
+                  <select class="form-select" name="pmh_family_history" id="pmh_family_history">
+                    <option value="">—</option>
+                    <option value="HTN">Hypertension</option>
+                    <option value="STROKE">Stroke</option>
+                    <option value="MI">Heart attack</option>
+                    <option value="DM">Diabetes</option>
+                    <option value="ASTHMA">Asthma</option>
+                    <option value="CKD">Kidney disease</option>
+                    <option value="CA">Cancer</option>
+                  </select>
+                </div>
+
+                <div class="col-lg-4 col-md-6 d-flex align-items-end">
+                  <div class="form-check me-4">
+                    <input class="form-check-input" type="checkbox" id="pmh_psych" name="pmh_psychiatric_history">
+                    <label class="form-check-label" for="pmh_psych">Past psychiatric history</label>
+                  </div>
+                  <div class="form-check">
+                    <input class="form-check-input" type="checkbox" id="pmh_psych_fac" name="pmh_psychiatric_facility">
+                    <label class="form-check-label" for="pmh_psych_fac">Confinement in facility</label>
+                  </div>
+                </div>
+
+                <div class="col-lg-4 col-md-6">
+                  <label class="form-label">If yes, when</label>
+                  <input class="form-control" type="text" name="pmh_psychiatric_when" id="pmh_psychiatric_when">
+                </div>
+
+                <div class="col-lg-4 col-md-6 d-flex align-items-end">
+                  <div class="form-check me-4">
+                    <input class="form-check-input" type="checkbox" id="pmh_arv_treatment" name="pmh_arv_treatment">
+                    <label class="form-check-label" for="pmh_arv_treatment">ARV treatment</label>
+                  </div>
+                  <div class="form-check me-4">
+                    <input class="form-check-input" type="checkbox" id="pmh_alcohol" name="pmh_alcohol_drinker">
+                    <label class="form-check-label" for="pmh_alcohol">Alcohol drinker</label>
+                  </div>
+                  <div class="form-check me-4">
+                    <input class="form-check-input" type="checkbox" id="pmh_illicit" name="pmh_illicit_drugs">
+                    <label class="form-check-label" for="pmh_illicit">Illicit drugs</label>
+                  </div>
+                  <div class="form-check">
+                    <input class="form-check-input" type="checkbox" id="pmh_poly" name="pmh_poly_drug_use">
+                    <label class="form-check-label" for="pmh_poly">Poly-drug use</label>
+                  </div>
+                </div>
+
+                <div class="col-lg-4 col-md-6">
+                  <label class="form-label">Smoking history</label>
+                  <select class="form-select" name="pmh_smoking" id="pmh_smoking">
+                    <option value="">—</option>
+                    <option value="NEVER">Never smoked</option>
+                    <option value="CURRENT">Current smoker</option>
+                    <option value="PASSIVE">Passive smoker</option>
+                    <option value="STOPPED">Stopped &gt; 1 year</option>
+                  </select>
+                </div>
+
+                <div class="col-12">
+                  <label class="form-label">Pediatric history</label>
+                  <textarea class="form-control" name="pmh_pediatric_history" rows="2"></textarea>
+                </div>
+                <div class="col-12">
+                  <label class="form-label">Major adult illnesses</label>
+                  <textarea class="form-control" name="pmh_major_adult_illnesses" rows="2"></textarea>
+                </div>
+                <div class="col-12">
+                  <label class="form-label">Major surgeries</label>
+                  <textarea class="form-control" name="pmh_major_surgeries" rows="2"></textarea>
+                </div>
+                <div class="col-12">
+                  <label class="form-label">Serious physical injuries</label>
+                  <textarea class="form-control" name="pmh_serious_injuries" rows="2"></textarea>
+                </div>
+                <div class="col-12">
+                  <label class="form-label">Limitations on range of motion and activities</label>
+                  <textarea class="form-control" name="pmh_limitations" rows="2"></textarea>
+                </div>
+                <div class="col-12">
+                  <label class="form-label">Medication history</label>
+                  <textarea class="form-control" name="pmh_medication_history" rows="2"></textarea>
+                </div>
+                <div class="col-12">
+                  <label class="form-label">History of transfusions/BT reactions</label>
+                  <textarea class="form-control" name="pmh_transfusions_reactions" rows="2"></textarea>
+                </div>
+                <div class="col-12">
+                  <label class="form-label">Mental and emotional problems</label>
+                  <textarea class="form-control" name="pmh_mental_emotional" rows="2"></textarea>
+                </div>
+                <div class="col-12">
+                  <label class="form-label">Allergies</label>
+                  <textarea class="form-control" name="pmh_allergies" rows="2"></textarea>
+                </div>
+                <div class="col-12">
+                  <label class="form-label">ARV treatment details</label>
+                  <textarea class="form-control" name="pmh_arv_details" rows="2"></textarea>
+                </div>
+                <div class="col-12">
+                  <label class="form-label">Vaccines</label>
+                  <textarea class="form-control" name="pmh_vaccines" rows="2"></textarea>
+                </div>
+              </div>
+            </div>
+
+            <!-- ================= PEA ================= -->
+            <div class="tab-pane fade" id="pea-pane" role="tabpanel" aria-labelledby="pea-tab" tabindex="0">
+              <div class="row g-3">
+                <div class="col-lg-4 col-md-6">
+                  <label class="form-label">Temperature (°C)</label>
+                  <input type="number" step="0.1" class="form-control" name="pea_temperature">
+                </div>
+                <div class="col-lg-4 col-md-6">
+                  <label class="form-label">Blood pressure (mmHg)</label>
+                  <input type="text" class="form-control" name="pea_blood_pressure" placeholder="e.g., 120/80">
+                </div>
+                <div class="col-lg-4 col-md-6">
+                  <label class="form-label">Heart rate (bpm)</label>
+                  <input type="number" step="1" min="0" class="form-control" name="pea_heart_rate">
+                </div>
+                <div class="col-lg-4 col-md-6">
+                  <label class="form-label">Respiratory rate (breaths/min)</label>
+                  <input type="number" step="1" min="0" class="form-control" name="pea_rr">
+                </div>
+                <div class="col-lg-4 col-md-6">
+                  <label class="form-label">Height (cm)</label>
+                  <input type="number" step="0.1" min="0" class="form-control" name="pea_height">
+                </div>
+                <div class="col-lg-4 col-md-6">
+                  <label class="form-label">Weight (kg)</label>
+                  <input type="number" step="0.1" min="0" class="form-control" name="pea_weight">
+                </div>
+                <div class="col-lg-4 col-md-6">
+                  <label class="form-label">Body Mass Index (BMI)</label>
+                  <input type="number" step="0.1" min="0" class="form-control" name="pea_bmi">
+                </div>
+
+                <!-- Complaints (booleans) -->
+                <div class="col-lg-6 col-md-6">
+                  <div class="form-check"><input class="form-check-input" type="checkbox" id="pea_ga" name="pea_general_appearance"><label class="form-check-label" for="pea_ga">Complaining: General appearance</label></div>
+                  <div class="form-check"><input class="form-check-input" type="checkbox" id="pea_heent" name="pea_head_eyes_ears_nose_throat"><label class="form-check-label" for="pea_heent">Complaining: Head/Eyes/Ears/Nose/Throat</label></div>
+                  <div class="form-check"><input class="form-check-input" type="checkbox" id="pea_neck" name="pea_neck"><label class="form-check-label" for="pea_neck">Complaining: Neck</label></div>
+                  <div class="form-check"><input class="form-check-input" type="checkbox" id="pea_chest" name="pea_chest_lungs"><label class="form-check-label" for="pea_chest">Complaining: Chest/Lungs</label></div>
+                  <div class="form-check"><input class="form-check-input" type="checkbox" id="pea_heart" name="pea_heart"><label class="form-check-label" for="pea_heart">Complaining: Heart</label></div>
+                </div>
+
+                <div class="col-lg-6 col-md-6">
+                  <div class="form-check"><input class="form-check-input" type="checkbox" id="pea_abdomen" name="pea_abdomen"><label class="form-check-label" for="pea_abdomen">Complaining: Abdomen</label></div>
+                  <div class="form-check"><input class="form-check-input" type="checkbox" id="pea_gu" name="pea_genito_urinary"><label class="form-check-label" for="pea_gu">Complaining: Genito-urinary tract</label></div>
+                  <div class="form-check"><input class="form-check-input" type="checkbox" id="pea_msk" name="pea_musculoskeletal"><label class="form-check-label" for="pea_msk">Complaining: Musculoskeletal system</label></div>
+                  <div class="form-check"><input class="form-check-input" type="checkbox" id="pea_ext" name="pea_extremities"><label class="form-check-label" for="pea_ext">Complaining: Extremities</label></div>
+                </div>
+
+                <div class="col-12">
+                  <label class="form-label">Other significant findings</label>
+                  <textarea class="form-control" name="pea_other_findings" rows="2"></textarea>
+                </div>
+              </div>
+            </div>
+
+            <!-- ================= TB ================= -->
+            <div class="tab-pane fade" id="tb-pane" role="tabpanel" aria-labelledby="tb-tab" tabindex="0">
+              <div class="row g-3">
+                <div class="col-lg-6 col-md-6">
+                  <div class="form-check"><input class="form-check-input" type="checkbox" id="tb_cough" name="tb_unexplained_cough"><label class="form-check-label" for="tb_cough">Unexplained cough</label></div>
+                  <div class="form-check"><input class="form-check-input" type="checkbox" id="tb_bmi" name="tb_bmi_less_18_5"><label class="form-check-label" for="tb_bmi">BMI &lt; 18.5</label></div>
+                  <div class="form-check"><input class="form-check-input" type="checkbox" id="tb_sputum" name="tb_blood_streaked_sputum"><label class="form-check-label" for="tb_sputum">Blood-streaked sputum</label></div>
+                </div>
+                <div class="col-lg-6 col-md-6">
+                  <div class="form-check"><input class="form-check-input" type="checkbox" id="tb_cxr" name="tb_cxr_suggestive"><label class="form-check-label" for="tb_cxr">Chest X-ray suggestive of TB</label></div>
+                  <div class="form-check"><input class="form-check-input" type="checkbox" id="tb_prev" name="tb_previous_treatment"><label class="form-check-label" for="tb_prev">History of previous TB treatment</label></div>
+                  <div class="form-check"><input class="form-check-input" type="checkbox" id="tb_exposure" name="tb_exposure"><label class="form-check-label" for="tb_exposure">History of TB exposure</label></div>
+                </div>
+
+                <div class="col-lg-4 col-md-6">
+                  <label class="form-label">TB remarks</label>
+                  <select class="form-select" name="tb_remarks" id="tb_remarks">
+                    <option value="">—</option>
+                    <option value="PRESUMPTIVE_TB">Presumptive TB</option>
+                    <option value="PRESUMPTIVE_DR_TB">Presumptive DR-TB</option>
+                    <option value="NOT_TB">Not TB</option>
+                    <option value="ONGOING_TB">Ongoing TB</option>
+                    <option value="OTHER_FU">Other follow-up</option>
+                  </select>
+                </div>
+              </div>
+            </div>
+
+            <!-- ================= Final Remarks ================= -->
+            <div class="tab-pane fade" id="fr-pane" role="tabpanel" aria-labelledby="fr-tab" tabindex="0">
+              <div class="row g-3">
+                <div class="col-lg-4 col-md-6">
+                  <label class="form-label">Final conclusion</label>
+                  <select class="form-select" name="fr_conclusion" id="fr_conclusion">
+                    <option value="">—</option>
+                    <option value="HEALTHY">Practically healthy</option>
+                    <option value="SBIRT">SBIRT</option>
+                    <option value="PHILPEN">PhilPEN</option>
+                    <option value="NEURO_PSYCH">Neuro-psychiatric evaluation</option>
+                    <option value="ILL_TREATMENT">Further documentation of allegations of ill-treatment</option>
+                  </select>
+                </div>
+
+                <div class="col-12">
+                  <label class="form-label">Other impressions</label>
+                  <textarea class="form-control" name="fr_other_impressions" rows="2"></textarea>
+                </div>
+
+                <div class="col-lg-4 col-md-6">
+                  <label class="form-label">Recommendation</label>
+                  <select class="form-select" name="fr_recommendation" id="fr_recommendation">
+                    <option value="">—</option>
+                    <option value="DORM">To be accommodated in general dormitory</option>
+                    <option value="ISOLATED">To be isolated</option>
+                    <option value="HOSPITAL">To be hospitalized</option>
+                  </select>
+                </div>
+              </div>
+            </div>
+
+          </div>
+
+          <div class="d-grid mt-4">
+            <button type="submit" class="btn btn-primary">
+              <i class="bi bi-plus-circle me-2"></i>Add Consultation
+            </button>
+          </div>
+        </form>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+</div>
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+  const addConsultationModal = document.getElementById('addConsultationModal');
+  const form = document.getElementById('addConsultationForm');
+  const dateInput = document.getElementById('consultationDate');
+  const timeSelect = document.getElementById('timeSelect');
+
+  // ---- Helpers
+  const pad2 = n => String(n).padStart(2, '0');
+  const todayLocal = () => { const d = new Date(); d.setHours(0,0,0,0); return d; };
+  const addMonthsLocal = (d, n) => { const x = new Date(d); x.setMonth(x.getMonth() + n); x.setHours(0,0,0,0); return x; };
+  const ymdToLocalDate = (ymd) => { // parse 'YYYY-MM-DD' safely in local time
+    const [y,m,d] = ymd.split('-').map(Number);
+    return new Date(y, (m||1)-1, d||1, 0,0,0,0);
+  };
+  const fmtYMD = (d) => `${d.getFullYear()}-${pad2(d.getMonth()+1)}-${pad2(d.getDate())}`;
+
+  function setDateConstraints(el) {
+    const t = todayLocal();
+    const tomorrow = new Date(t); tomorrow.setDate(tomorrow.getDate() + 1);
+    const maxDate = addMonthsLocal(t, 6);
+    el.min = fmtYMD(tomorrow);
+    el.max = fmtYMD(maxDate);
+  }
+
+  async function loadOptions(selectEl, params = {}) {
+    const dataUrl = selectEl.getAttribute('data-url');
+    if (!dataUrl) return;
+
+    try {
+      const url = new URL(dataUrl, window.location.origin);
+      Object.entries(params).forEach(([k, v]) => url.searchParams.set(k, v));
+
+      
+      const resp = await fetch(url, { credentials: 'same-origin' });
+      if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
+
+      const data = await resp.json();
+      let defaultText = 'Select...';
+      switch (selectEl.id) {
+        case 'pdlSelect': defaultText = 'Select PDL...'; break;
+        case 'physicianSelect': defaultText = 'Select Physician...'; break;
+        case 'locationSelect': defaultText = 'Select Location...'; break;
+        case 'reasonSelect': defaultText = 'Select Reason...'; break;
+        case 'timeSelect': defaultText = 'Select Time...'; break;
+      }
+      selectEl.innerHTML = `<option value="">${defaultText}</option>`;
+
+      data.forEach(item => {
+        const opt = document.createElement('option');
+        switch (selectEl.id) {
+          case 'timeSelect':
+            opt.value = item.value;
+            opt.textContent = item.display;
+            break;
+          case 'pdlSelect':
+          case 'physicianSelect':
+            opt.value = item.id;
+            opt.textContent = item.name;
+            break;
+          case 'locationSelect':
+            opt.value = item.id;
+            opt.textContent = item.room_number;
+            break;
+          case 'reasonSelect':
+            opt.value = item.id;
+            opt.textContent = item.reason;
+            break;
+        }
+        selectEl.appendChild(opt);
+      });
+    } catch (e) {
+      console.error('Error fetching options:', e);
+      const label = {
+        pdlSelect: 'PDLs', physicianSelect: 'Physicians',
+        locationSelect: 'Locations', reasonSelect: 'Reasons', timeSelect: 'Times'
+      }[selectEl.id] || 'options';
+      selectEl.innerHTML = `<option value="">Failed to load ${label}</option>`;
+    }
+  }
+
+  if (addConsultationModal) {
+    setDateConstraints(dateInput);
+
+    addConsultationModal.addEventListener('show.bs.modal', function (evt) {
+      const btn = evt.relatedTarget;
+      const ymd = (btn && btn.getAttribute('data-consultation-date')) || '';
+
+      const t = todayLocal();
+      const maxDate = addMonthsLocal(t, 6);
+
+      let targetYMD = fmtYMD(new Date(t.getFullYear(), t.getMonth(), t.getDate() + 1));
+      if (/^\d{4}-\d{2}-\d{2}$/.test(ymd)) {
+        const d = ymdToLocalDate(ymd);
+        if (d > t && d <= maxDate) targetYMD = ymd;
+      }
+      dateInput.value = targetYMD;
+
+      // Load selects; pass date to time API
+      const selects = [
+        'pdlSelect', 'locationSelect', 'physicianSelect', 'reasonSelect'
+      ].map(id => document.getElementById(id));
+
+      selects.forEach(sel => loadOptions(sel));
+      loadOptions(timeSelect, { date: dateInput.value });
+    });
+
+    dateInput.addEventListener('change', function () {
+      const chosen = this.value;
+      const t = todayLocal();
+      const maxDate = addMonthsLocal(t, 6);
+
+      if (!/^\d{4}-\d{2}-\d{2}$/.test(chosen)) {
+        alert('Please pick a valid date.');
+        this.value = fmtYMD(new Date(t.getFullYear(), t.getMonth(), t.getDate() + 1));
+      } else {
+        const d = ymdToLocalDate(chosen);
+        if (d <= t) {
+          alert('Please select a future date');
+          this.value = fmtYMD(new Date(t.getFullYear(), t.getMonth(), t.getDate() + 1));
+        } else if (d > maxDate) {
+          alert('Please select a date within the next 6 months');
+          this.value = fmtYMD(maxDate);
+        }
+      }
+      // Refresh time slots when date changes
+      loadOptions(timeSelect, { date: this.value });
+    });
+
+    form.addEventListener('submit', async function (e) {
+      e.preventDefault();
+
+      if (!form.checkValidity()) {
+        e.stopPropagation();
+        form.classList.add('was-validated');
+        return;
+      }
+
+      const formData = new FormData(form);
+      try {
+        const resp = await fetch(form.action, {
+          method: 'POST',
+          body: formData,
+          headers: { 'X-CSRFToken': formData.get('csrfmiddlewaretoken') || '' },
+          credentials: 'same-origin'
+        });
+
+        if (!resp.ok) {
+          // Try JSON, then text
+          let msg = `Failed to create consultation (HTTP ${resp.status})`;
+          try {
+            const j = await resp.json();
+            if (j && (j.message || j.detail)) msg = j.message || j.detail;
+          } catch {
+            const t = await resp.text();
+            if (t) msg = t.slice(0, 500);
+          }
+          throw new Error(msg);
+        }
+
+        bootstrap.Modal.getInstance(addConsultationModal)?.hide();
+        window.location.reload();
+      } catch (err) {
+        console.error(err);
+        alert(err.message || 'Failed to create consultation. Please try again.');
+      }
+    });
+
+    addConsultationModal.addEventListener('hidden.bs.modal', function () {
+      form.reset();
+      form.classList.remove('was-validated');
+      // clear selects
+      ['timeSelect','pdlSelect','locationSelect','physicianSelect','reasonSelect']
+        .forEach(id => { const el = document.getElementById(id); if (el) el.innerHTML = '<option value="">Select...</option>'; });
+    });
+  }
+
+  // Bootstrap tooltips (avoid putting tooltips on <option>, browsers don’t show them)
+  document.querySelectorAll('[data-bs-toggle="tooltip"]').forEach(el => new bootstrap.Tooltip(el));
+});
+</script>
+  
+{% endblock %}

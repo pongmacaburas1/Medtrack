@@ -1,0 +1,287 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Report Center - Consultations{% endblock %}
+
+{% block content %}
+<style>
+  .report-container {
+    background: #fff;
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    padding: 24px;
+    margin: 20px 0;
+  }
+  
+  .report-header {
+    border-bottom: 3px solid #0d6efd;
+    padding-bottom: 16px;
+    margin-bottom: 24px;
+  }
+  
+  .report-header h1 {
+    margin: 0 0 8px 0;
+    font-size: 28px;
+    color: #212529;
+  }
+  
+  .report-meta {
+    color: #6c757d;
+    font-size: 14px;
+  }
+  
+  .export-bar {
+    display: flex;
+    gap: 12px;
+    flex-wrap: wrap;
+    align-items: center;
+    border: 1px solid #dee2e6;
+    padding: 12px 16px;
+    margin: 20px 0;
+    background: #f8f9fa;
+    border-radius: 6px;
+  }
+  
+  .export-bar strong {
+    color: #495057;
+  }
+  
+  .export-bar a {
+    color: #0d6efd;
+    text-decoration: none;
+    padding: 4px 8px;
+    border-radius: 4px;
+    transition: background-color 0.2s;
+  }
+  
+  .export-bar a:hover {
+    background-color: #e7f1ff;
+    text-decoration: underline;
+  }
+  
+  .section-title {
+    margin-top: 32px;
+    margin-bottom: 16px;
+    padding-bottom: 8px;
+    border-bottom: 2px solid #212529;
+    font-size: 20px;
+    font-weight: 600;
+    color: #212529;
+  }
+  
+  .report-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 16px 0 32px 0;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+  }
+  
+  .report-table th,
+  .report-table td {
+    border: 1px solid #dee2e6;
+    padding: 12px 16px;
+    vertical-align: middle;
+  }
+  
+  .report-table thead th {
+    background: #e9ecef;
+    font-weight: 600;
+    color: #495057;
+    text-align: left;
+  }
+  
+  .report-table tbody tr:hover {
+    background-color: #f8f9fa;
+  }
+  
+  .report-table tbody tr:nth-child(even) {
+    background-color: #fcfcfc;
+  }
+  
+  .text-right {
+    text-align: right;
+  }
+  
+  .text-muted {
+    color: #6c757d;
+  }
+  
+  .mono {
+    font-family: "Courier New", Courier, monospace;
+    background: #f8f9fa;
+    padding: 2px 6px;
+    border-radius: 3px;
+    font-size: 13px;
+  }
+  
+  .badge-total {
+    background: #0d6efd;
+    color: white;
+    padding: 4px 8px;
+    border-radius: 4px;
+    font-size: 12px;
+    font-weight: 600;
+  }
+  
+  .badge-completed {
+    background: #198754;
+    color: white;
+    padding: 4px 8px;
+    border-radius: 4px;
+    font-size: 12px;
+    font-weight: 600;
+  }
+  
+  .badge-scheduled {
+    background: #ffc107;
+    color: #000;
+    padding: 4px 8px;
+    border-radius: 4px;
+    font-size: 12px;
+    font-weight: 600;
+  }
+  
+  .badge-canceled {
+    background: #dc3545;
+    color: white;
+    padding: 4px 8px;
+    border-radius: 4px;
+    font-size: 12px;
+    font-weight: 600;
+  }
+  
+  .badge-emergency {
+    background: #fd7e14;
+    color: white;
+    padding: 4px 8px;
+    border-radius: 4px;
+    font-size: 12px;
+    font-weight: 600;
+  }
+</style>
+
+<div class="container-fluid">
+  <div class="report-container">
+    <div class="report-header">
+      <h1><i class="bi bi-file-earmark-bar-graph me-2"></i>Report Center — Consultations</h1>
+      <div class="report-meta">
+        <i class="bi bi-calendar-event me-1"></i>Generated: <span class="mono">{{ today }}</span>
+      </div>
+    </div>
+
+    <!-- Quick Links to Other Reports -->
+    <div class="export-bar mb-3" style="background:#e8f5e9; border-color:#c8e6c9;">
+      <strong><i class="bi bi-grid-3x3-gap me-1" style="color:#10b981;"></i>Health Reports:</strong>
+      <a href="{% url 'reports:health_monitoring_dashboard' %}" style="color:#10b981;"><i class="bi bi-activity me-1"></i>Health Monitoring Statistics</a>
+      <span>|</span>
+      <a href="{% url 'reports:health_conditions' %}"><i class="bi bi-heart-pulse me-1"></i>Health Conditions</a>
+      <span>|</span>
+      <a href="{% url 'reports:fast_moving_medications' %}"><i class="bi bi-capsule me-1"></i>Fast-Moving Medications</a>
+      <span>|</span>
+      <a href="{% url 'reports:inventory_report' %}"><i class="bi bi-box-seam me-1"></i>Inventory Report</a>
+    </div>
+
+    <div class="export-bar">
+      <strong><i class="bi bi-download me-1"></i>Export CSV:</strong>
+      <a href="?export=csv&period=week"><i class="bi bi-file-earmark-spreadsheet me-1"></i>Weekly</a>
+      <span>|</span>
+      <a href="?export=csv&period=month"><i class="bi bi-file-earmark-spreadsheet me-1"></i>Monthly</a>
+      <span>|</span>
+      <a href="?export=csv&period=year"><i class="bi bi-file-earmark-spreadsheet me-1"></i>Yearly</a>
+      <span class="ms-auto">|</span>
+      <a href="{% url 'consultations:doctor_dashboard' %}"><i class="bi bi-house-door me-1"></i>Back to Dashboard</a>
+    </div>
+
+    <h2 class="section-title"><i class="bi bi-calendar-week me-2"></i>Weekly Report (Last 12 Weeks)</h2>
+    <div class="table-responsive">
+      <table class="report-table">
+        <thead>
+          <tr>
+            <th><i class="bi bi-calendar3 me-1"></i>Week</th>
+            <th class="text-right"><i class="bi bi-bar-chart me-1"></i>Total</th>
+            <th class="text-right"><i class="bi bi-check-circle me-1"></i>Completed</th>
+            <th class="text-right"><i class="bi bi-clock me-1"></i>Scheduled</th>
+            <th class="text-right"><i class="bi bi-x-circle me-1"></i>Canceled</th>
+            <th class="text-right"><i class="bi bi-exclamation-triangle me-1"></i>Emergencies</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for r in weeks %}
+          <tr>
+            <td><strong>{{ r.label }}</strong></td>
+            <td class="text-right"><span class="badge-total">{{ r.total }}</span></td>
+            <td class="text-right"><span class="badge-completed">{{ r.completed }}</span></td>
+            <td class="text-right"><span class="badge-scheduled">{{ r.scheduled }}</span></td>
+            <td class="text-right"><span class="badge-canceled">{{ r.canceled }}</span></td>
+            <td class="text-right"><span class="badge-emergency">{{ r.emergencies }}</span></td>
+          </tr>
+          {% empty %}
+          <tr><td colspan="6" class="text-muted text-center">No data available.</td></tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+
+    <h2 class="section-title"><i class="bi bi-calendar-month me-2"></i>Monthly Report (Last 12 Months)</h2>
+    <div class="table-responsive">
+      <table class="report-table">
+        <thead>
+          <tr>
+            <th><i class="bi bi-calendar3 me-1"></i>Month</th>
+            <th class="text-right"><i class="bi bi-bar-chart me-1"></i>Total</th>
+            <th class="text-right"><i class="bi bi-check-circle me-1"></i>Completed</th>
+            <th class="text-right"><i class="bi bi-clock me-1"></i>Scheduled</th>
+            <th class="text-right"><i class="bi bi-x-circle me-1"></i>Canceled</th>
+            <th class="text-right"><i class="bi bi-exclamation-triangle me-1"></i>Emergencies</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for r in months %}
+          <tr>
+            <td><strong>{{ r.label }}</strong></td>
+            <td class="text-right"><span class="badge-total">{{ r.total }}</span></td>
+            <td class="text-right"><span class="badge-completed">{{ r.completed }}</span></td>
+            <td class="text-right"><span class="badge-scheduled">{{ r.scheduled }}</span></td>
+            <td class="text-right"><span class="badge-canceled">{{ r.canceled }}</span></td>
+            <td class="text-right"><span class="badge-emergency">{{ r.emergencies }}</span></td>
+          </tr>
+          {% empty %}
+          <tr><td colspan="6" class="text-muted text-center">No data available.</td></tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+
+    <h2 class="section-title"><i class="bi bi-calendar-range me-2"></i>Yearly Report (Last 5 Years)</h2>
+    <div class="table-responsive">
+      <table class="report-table">
+        <thead>
+          <tr>
+            <th><i class="bi bi-calendar3 me-1"></i>Year</th>
+            <th class="text-right"><i class="bi bi-bar-chart me-1"></i>Total</th>
+            <th class="text-right"><i class="bi bi-check-circle me-1"></i>Completed</th>
+            <th class="text-right"><i class="bi bi-clock me-1"></i>Scheduled</th>
+            <th class="text-right"><i class="bi bi-x-circle me-1"></i>Canceled</th>
+            <th class="text-right"><i class="bi bi-exclamation-triangle me-1"></i>Emergencies</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for r in years %}
+          <tr>
+            <td><strong>{{ r.label }}</strong></td>
+            <td class="text-right"><span class="badge-total">{{ r.total }}</span></td>
+            <td class="text-right"><span class="badge-completed">{{ r.completed }}</span></td>
+            <td class="text-right"><span class="badge-scheduled">{{ r.scheduled }}</span></td>
+            <td class="text-right"><span class="badge-canceled">{{ r.canceled }}</span></td>
+            <td class="text-right"><span class="badge-emergency">{{ r.emergencies }}</span></td>
+          </tr>
+          {% empty %}
+          <tr><td colspan="6" class="text-muted text-center">No data available.</td></tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+
+  </div>
+</div>
+{% endblock %}
