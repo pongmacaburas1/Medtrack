@@ -1,0 +1,239 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>MEDICAL RECORD — {{ c.pdl_profile }}</title>
+<style>
+  /* --- UNIVERSAL RESET & PRINT CONFIG --- */
+  * { box-sizing: border-box; -webkit-print-color-adjust: exact; margin: 0; padding: 0; }
+  
+  body { 
+    font-family: "Times New Roman", Times, serif; 
+    font-size: 10px; 
+    padding: 10px; 
+    background: #f0f0f0; 
+    color: #000; 
+    line-height: 1.2;
+  }
+  
+  .document-container {
+    background: #fff; width: 100%; max-width: 850px; margin: 0 auto;
+    padding: 0.3in; border: 1px solid #ccc; 
+  }
+
+  /* Toolbar for Screen View */
+  .toolbar { 
+    max-width: 850px; margin: 0 auto 10px; background: #222; color: #fff; 
+    padding: 10px; display: flex; justify-content: space-between; border-radius: 4px; align-items: center;
+  }
+  .toolbar a { color: #fff; text-decoration: none; font-weight: bold; background: #444; padding: 6px 12px; border-radius: 3px; font-size: 12px; }
+
+  /* Header Section */
+  .header { text-align: center; border-bottom: 2px solid #000; margin-bottom: 10px; padding-bottom: 5px; }
+  .header p { margin: 1px; font-size: 9px; text-transform: uppercase; }
+  .header h2 { margin: 2px; font-size: 16px; }
+  
+  /* Status Header */
+  .status-header {
+    text-align: center; border: 1px solid #000; padding: 5px; margin-bottom: 10px; font-size: 11px; font-weight: bold;
+    {% if c.status == 'completed' %} background-color: #e8f5e9 !important; color: #2e7d32;
+    {% elif c.status == 'canceled' %} background-color: #ffebee !important; color: #c62828;
+    {% else %} background-color: #e3f2fd !important; color: #1565c0; {% endif %}
+  }
+
+  /* Section Title Styling */
+  .section-head { background: #333 !important; color: #fff !important; padding: 4px 10px; font-weight: bold; text-transform: uppercase; margin-top: 8px; font-size: 9px; }
+
+  /* Table Grid */
+  table { width: 100%; border-collapse: collapse; margin-bottom: 0px; table-layout: fixed; }
+  th, td { border: 1px solid #000; padding: 4px 6px; text-align: left; vertical-align: top; word-wrap: break-word; }
+  th { background: #f2f2f2 !important; width: 165px; font-size: 8px; text-transform: uppercase; color: #333; }
+  td { font-size: 10px; font-weight: bold; }
+
+  /* Footer Signature Area */
+  .footer { margin-top: 30px; }
+  .sig-table { width: 100%; border: none !important; }
+  .sig-table td { border: none !important; text-align: center; padding-top: 40px; width: 50%; }
+  .sig-line { border-top: 1.5px solid #000 !important; display: block; width: 80%; margin: 0 auto; padding-top: 2px; text-transform: uppercase; }
+
+  @media print {
+    body { background: #fff; padding: 0; }
+    .toolbar { display: none !important; }
+    .document-container { border: none; box-shadow: none; padding: 0; max-width: none; }
+    tr { page-break-inside: avoid; } 
+    .page-break { page-break-before: always; }
+  }
+</style>
+</head>
+<body>
+
+<div class="toolbar">
+  <div><a href="{% url 'consultations:consultation_calendar' %}">← BACK TO CALENDAR</a></div>
+  <a href="javascript:window.print()" style="background: #007bff;">PRINT FORM</a>
+</div>
+
+<div class="document-container">
+  <div class="header">
+    <h2>SAN JOSE DISTRICT JAIL</h2>
+    <p>Medical Services Unit • San Jose, Occidental Mindoro</p>
+  </div>
+
+  <div class="status-header">RECORD STATUS: {{ c.status|upper }}</div>
+
+  <div class="section-head">I. Patient & Visit Information</div>
+  <table>
+    <tr><th>Patient Full Name</th><td colspan="3">{{ c.pdl_profile }}</td></tr>
+    <tr>
+      <th>Consultation Date</th><td>{{ c.consultation_date_date_only|date:"F d, Y" }}</td>
+      <th>Time Block</th><td>{{ c.consultation_time_block }}</td>
+    </tr>
+    <tr>
+      <th>Attending Physician/Nurse</th><td>{{ c.physician }}</td>
+    </tr>
+    <tr>
+      <th>Emergency Case?</th><td>{{ c.is_an_emergency|yesno:"YES,NO" }}</td>
+      <th>Reason for Consultation</th><td>{{ c.reason }}</td>
+    </tr>
+    <tr><th>Notes</th><td colspan="3">{{ c.notes|default:"------" }}</td></tr>
+  </table>
+
+  <div class="section-head">II. Physical Examination on Arrival (Vitals & Findings)</div>
+  <table>
+    <tr>
+      <th>Temperature</th><td>{{ c.pea_temperature|default:"" }}°C</td>
+      <th>Blood Pressure</th><td>{{ c.pea_blood_pressure|default:"------" }}</td>
+      <th>Heart Rate</th><td>{{ c.pea_heart_rate|default:"------" }} bpm</td>
+    </tr>
+    <tr>
+      <th>Respiratory Rate</th><td>{{ c.pea_rr|default:"------" }}</td>
+      <th>Height / Weight</th><td>{{ c.pea_height|default:"None" }} cm / {{ c.pea_weight|default:"------" }} kg</td>
+      <th>Body Mass Index (BMI)</th><td>{{ c.pea_bmi|default:"------" }}</td>
+    </tr>
+  </table>
+
+  <table>
+    <tr>
+      <th>General Appearance</th><td>{{ c.pea_general_appearance|yesno:"YES,NO" }}</td>
+      <th>Head, Eyes, Ears, Nose, Throat</th><td>{{ c.pea_head_eyes_ears_nose_throat|yesno:"YES,NO" }}</td>
+      <th>Neck Condition</th><td>{{ c.pea_neck|yesno:"YES,NO" }}</td>
+    </tr>
+    <tr>
+      <th>Chest and Lungs</th><td>{{ c.pea_chest_lungs|yesno:"YES,NO" }}</td>
+      <th>Cardiovascular (Heart)</th><td>{{ c.pea_heart|yesno:"YES,NO" }}</td>
+      <th>Abdomen Condition</th><td>{{ c.pea_abdomen|yesno:"YES,NO" }}</td>
+    </tr>
+    <tr>
+      <th>Genito-Urinary System</th><td>{{ c.pea_genito_urinary|yesno:"YES,NO" }}</td>
+      <th>Musculoskeletal System</th><td>{{ c.pea_musculoskeletal|yesno:"YES,NOl" }}</td>
+      <th>Physical Extremities</th><td>{{ c.pea_extremities|yesno:"YES,NO" }}</td>
+    </tr>
+    <tr><th>Other Clinical Findings</th><td colspan="5">{{ c.pea_other_findings|default:"None" }}</td></tr>
+  </table>
+
+  <div class="section-head">III. Past Medical History (Complete PMH)</div>
+  <table>
+    <tr>
+      <th>Blood Type</th><td>{{ c.pmh_blood_type|default:"None" }}</td>
+      <th>Family Medical History</th><td>{{ c.get_pmh_family_history_display|default:"None" }}</td>
+    </tr>
+    <tr>
+      <th>Smoking Status</th><td>{{ c.get_pmh_smoking_display|default:"None" }}</td>
+      <th>Alcohol Drinker</th><td>{{ c.pmh_alcohol_drinker|yesno:"YES,NO" }}</td>
+    </tr>
+    <tr>
+      <th>Psychiatric History</th><td>{{ c.pmh_psychiatric_history|yesno:"YES,NO" }}</td>
+      <th>Psychiatric Facility History</th><td>{{ c.pmh_psychiatric_facility|yesno:"YES,NO" }}</td>
+    </tr>
+    <tr>
+      <th>Illicit Drug History</th><td>{{ c.pmh_illicit_drugs|yesno:"YES,NO" }}</td>
+      <th>Poly-Drug Use History</th><td>{{ c.pmh_poly_drug_use|yesno:"YES,NO" }}</td>
+    </tr>
+    <tr>
+      <th>Psychiatric History (When)</th><td>{{ c.pmh_psychiatric_when|default:"N/A" }}</td>
+      <th>Physical Limitations</th><td>{{ c.pmh_limitations|default:"N/A" }}</td>
+    </tr>
+  </table>
+
+  <table>
+    <tr><th>Pediatric Medical History</th><td colspan="3">{{ c.pmh_pediatric_history|default:"N/A" }}</td></tr>
+    <tr><th>Major Adult Illnesses</th><td colspan="3">{{ c.pmh_major_adult_illnesses|default:"N/A" }}</td></tr>
+    <tr><th>Major Surgical History</th><td colspan="3">{{ c.pmh_major_surgeries|default:"N/A" }}</td></tr>
+    <tr><th>Serious Physical Injuries</th><td colspan="3">{{ c.pmh_serious_injuries|default:"N/A" }}</td></tr>
+    <tr><th>Medication History</th><td colspan="3">{{ c.pmh_medication_history|default:"N/A" }}</td></tr>
+    <tr><th>Transfusions & Reactions</th><td colspan="3">{{ c.pmh_transfusions_reactions|default:"N/A" }}</td></tr>
+    <tr><th>Mental & Emotional Issues</th><td colspan="3">{{ c.pmh_mental_emotional|default:"N/A" }}</td></tr>
+    <tr><th>Allergies (Drug/Food/Others)</th><td colspan="3">{{ c.pmh_allergies|default:"None" }}</td></tr>
+    <tr>
+      <th>ARV Treatment Details</th><td>{{ c.pmh_arv_details|default:"N/A" }}</td>
+      <th>Vaccination Records</th><td>{{ c.pmh_vaccines|default:"N/A" }}</td>
+    </tr>
+  </table>
+
+  <div class="section-head">IV. Tuberculosis Screening & Final Assessment</div>
+  <table>
+    <tr><th>Tuberculosis Screening Remarks</th><td colspan="3">{{ c.get_tb_remarks_display }}</td></tr>
+    <tr><th>Final Clinical Conclusion</th><td colspan="3">{{ c.get_fr_conclusion_display }}</td></tr>
+    <tr><th>Primary Medical Recommendation</th><td colspan="3">{{ c.get_fr_recommendation_display }}</td></tr>
+    <tr><th>Other Clinical Impressions</th><td colspan="3">{{ c.fr_other_impressions|default:"None" }}</td></tr>
+  </table>
+
+  <div class="section-head">V. TB Entry Screening Checklist</div>
+  <table>
+    <tr>
+      <th>Unexplained Cough</th>
+      <td>{{ c.tb_unexplained_cough|yesno:"YES,NO" }}</td>
+      <th>BMI &lt; 18.5</th>
+      <td>{{ c.tb_bmi_less_18_5|yesno:"YES,NO" }}</td>
+    </tr>
+    <tr>
+      <th>Blood-streaked Sputum</th>
+      <td>{{ c.tb_blood_streaked_sputum|yesno:"YES,NO" }}</td>
+      <th>Chest X-ray Suggestive</th>
+      <td>{{ c.tb_cxr_suggestive|yesno:"YES,NO" }}</td>
+    </tr>
+    <tr>
+      <th>Previous TB Treatment</th>
+      <td>{{ c.tb_previous_treatment|yesno:"YES,NO" }}</td>
+      <th>TB Exposure History</th>
+      <td>{{ c.tb_exposure|yesno:"YES,NO" }}</td>
+    </tr>
+  </table>
+
+  <div class="section-head">VI. Follow-up Consultation Info</div>
+  <table>
+    <tr>
+      <th>Is Follow-up Consultation?</th>
+      <td>{{ c.is_followup|yesno:"YES,NO" }}</td>
+      <th>Parent Consultation</th>
+      <td>{% if c.parent_consultation %}{{ c.parent_consultation }}{% else %}None{% endif %}</td>
+    </tr>
+    <tr>
+      <th>Follow-up Scheduled?</th>
+      <td>{{ c.followup_scheduled|yesno:"YES,NO" }}</td>
+      <th>Days Until Follow-up</th>
+      <td>{{ c.followup_days|default:"N/A" }}</td>
+    </tr>
+  </table>
+
+  <div class="footer">
+    <table class="sig-table">
+      <tr>
+        <td>
+          <span class="sig-line">{{ c.physician }}</span>
+          
+        </td>
+        <td>
+          <span class="sig-line"></span>
+          <strong>Patient Signature / Thumbmark</strong>
+        </td>
+      </tr>
+    
+    <div style="text-align: center; margin-top: 20px; font-size: 8px; color: #666;">
+      San Jose District Jail Health Information System | Generated: {{ now|date:"Y-m-d H:i" }}
+    </div>
+  </div>
+</div>
+</table>
+</body>
+</html>

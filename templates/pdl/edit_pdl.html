@@ -1,0 +1,467 @@
+
+{% extends "base.html" %}
+
+{% block title %}Edit PDL{% endblock %}
+
+{% block content %}
+<div class="container my-4">
+  <h1 class="h3 mb-3">Edit PDL</h1>
+
+  {% if messages %}
+    {% for m in messages %}
+      <div class="alert alert-{{ m.tags }} mb-3">{{ m }}</div>
+    {% endfor %}
+  {% endif %}
+
+  <form method="post" novalidate>
+    {% csrf_token %}
+
+    <!-- User Section -->
+    <section class="card mb-4">
+      <div class="card-header bg-light">
+        <strong>User</strong>
+      </div>
+      <div class="card-body">
+        <div class="row g-3">
+          <div class="col-md-6">
+            <label class="form-label">First name</label>
+            {{ user_form.first_name }}
+            {% if user_form.first_name.errors %}
+              <div class="text-danger small">{{ user_form.first_name.errors|join:", " }}</div>
+            {% endif %}
+          </div>
+          <div class="col-md-6">
+            <label class="form-label">Last name</label>
+            {{ user_form.last_name }}
+            {% if user_form.last_name.errors %}
+              <div class="text-danger small">{{ user_form.last_name.errors|join:", " }}</div>
+            {% endif %}
+          </div>
+          <div class="col-md-6">
+            <label class="form-label">Username</label>
+            {{ user_form.username }}
+            <div class="form-text">{{ user_form.fields.username.help_text }}</div>
+            {% if user_form.username.errors %}
+              <div class="text-danger small">{{ user_form.username.errors|join:", " }}</div>
+            {% endif %}
+          </div>
+          <div class="col-md-6">
+            <label class="form-label">Email</label>
+            {{ user_form.email }}
+            <div class="form-text">{{ user_form.fields.email.help_text }}</div>
+            {% if user_form.email.errors %}
+              <div class="text-danger small">{{ user_form.email.errors|join:", " }}</div>
+            {% endif %}
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- PDL Profile Section -->
+    <section class="card mb-4">
+      <div class="card-header bg-light">
+        <strong>PDL Profile</strong>
+      </div>
+      <div class="card-body">
+        {# === Add this block at the start of the PDL Profile card body === #}
+<div class="row g-3 align-items-end mb-3">
+  <div class="col-md-3">
+    <label class="form-label">First name</label>
+    <input type="text" id="ro-first-name" class="form-control" value="" readonly>
+    <div class="form-text">Read-only (mirrors User → First name)</div>
+  </div>
+
+  <div class="col-md-3">
+    <label class="form-label">Middle name</label>
+    {{ pdl_profile_form.middle_name }}
+    <div class="form-text">Enter middle name</div>
+    {% if pdl_profile_form.middle_name.errors %}
+      <div class="text-danger small">{{ pdl_profile_form.middle_name.errors|join:", " }}</div>
+    {% endif %}
+  </div>
+
+  <div class="col-md-3">
+    <label class="form-label">Last name</label>
+    <input type="text" id="ro-last-name" class="form-control" value="" readonly>
+    <div class="form-text">Read-only (mirrors User → Last name)</div>
+  </div>
+
+  <div class="col-md-3">
+    <label class="form-label">Suffix</label>
+    {{ pdl_profile_form.name_suffix }}
+    <div class="form-text">Select suffix if applicable.</div>
+
+    {% if pdl_profile_form.name_suffix.errors %}
+      <div class="text-danger small">{{ pdl_profile_form.name_suffix.errors|join:", " }}</div>
+    {% endif %}
+  </div>
+</div>
+{# === /Add block === #}
+
+<div class="row g-3 align-items-start">
+  <!-- URL input -->
+  <div class="col-md-9">
+    <label class="form-label">Profile Photo URL</label>
+    {{ pdl_profile_form.profile_picture_url }}
+    {% if pdl_profile_form.profile_picture_url.errors %}
+      <div class="text-danger small">{{ pdl_profile_form.profile_picture_url.errors|join:", " }}</div>
+    {% endif %}
+    <div class="form-text">Paste a direct image URL (jpg, png, webp, etc.).</div>
+  </div>
+
+  <!-- Live preview -->
+  <div class="col-md-3">
+    <label class="form-label d-flex justify-content-between align-items-center">
+      <span>Preview</span>
+    </label>
+    <div id="profile-photo-preview"
+         class="border rounded p-2 d-flex flex-column align-items-center justify-content-center"
+         style="height: 170px;"
+         aria-live="polite"
+         aria-atomic="true">
+      <!-- placeholder (shown until a URL is pasted) -->
+      <i class="bi bi-image fs-1 text-secondary mb-2" aria-hidden="true"></i>
+      <div class="text-muted small text-center">Paste a URL to preview</div>
+    </div>
+  </div>
+</div>
+
+        <div class="row g-3">
+          <div class="col-md-3">
+            <label class="form-label">Sex</label>
+            {{ pdl_profile_form.sex }}
+            {% if pdl_profile_form.sex.errors %}
+              <div class="text-danger small">{{ pdl_profile_form.sex.errors|join:", " }}</div>
+            {% endif %}
+          </div>
+          <div class="col-md-3">
+            <label class="form-label">Age</label>
+            {{ pdl_profile_form.age }}
+            {% if pdl_profile_form.age.errors %}
+              <div class="text-danger small">{{ pdl_profile_form.age.errors|join:", " }}</div>
+            {% endif %}
+          </div>
+          <div class="col-md-3">
+            <label class="form-label">Civil status</label>
+            {{ pdl_profile_form.civil_status }}
+          </div>
+          <div class="col-md-3">
+            <label class="form-label">Educational attainment</label>
+            {{ pdl_profile_form.educational_attainment }}
+          </div>
+
+          <div class="col-md-4">
+            <label class="form-label">Date of birth</label>
+            {{ pdl_profile_form.date_of_birth }}
+          </div>
+          <div class="col-md-4">
+            <label class="form-label">Place of birth — Municipality</label>
+            {{ pdl_profile_form.place_of_birth_municipality }}
+          </div>
+          <div class="col-md-4">
+            <label class="form-label">Province</label>
+            {{ pdl_profile_form.place_of_birth_province }}
+          </div>
+          <div class="col-md-6">
+            <label class="form-label">Region</label>
+            {{ pdl_profile_form.place_of_birth_region }}
+          </div>
+          <div class="col-md-6">
+            <label class="form-label">Country</label>
+            {{ pdl_profile_form.place_of_birth_country }}
+          </div>
+
+          <div class="col-md-6">
+            <label class="form-label">Date of commitment</label>
+            {{ pdl_profile_form.date_of_commitment }}
+          </div>
+          <div class="col-md-6">
+            <label class="form-label">Name of jail</label>
+            {{ pdl_profile_form.name_of_jail }}
+          </div>
+
+          <div class="col-md-6">
+            <label class="form-label">Case</label>
+            {{ pdl_profile_form.case }}
+          </div>
+          <div class="col-md-6">
+            <label class="form-label">Case number</label>
+            {{ pdl_profile_form.case_number }}
+          </div>
+
+          <div class="col-12">
+            <label class="form-label">Origin lockup</label>
+            {{ pdl_profile_form.origin_lockup }}
+          </div>
+
+          <div class="col-md-6">
+            <label class="form-label">Contact person (name)</label>
+            {{ pdl_profile_form.contact_person_name }}
+          </div>
+          <div class="col-md-6">
+            <label class="form-label">Relationship</label>
+            {{ pdl_profile_form.contact_person_relationship }}
+          </div>
+          <div class="col-md-4">
+            <label class="form-label">Contact person (phone)</label>
+            {{ pdl_profile_form.contact_person_phone }}
+          </div>
+          <div class="col-md-4">
+            <label class="form-label">Contact person (email)</label>
+            {{ pdl_profile_form.contact_person_email }}
+          </div>
+          <div class="col-md-4">
+            <label class="form-label">Contact person (address)</label>
+            {{ pdl_profile_form.contact_person_address }}
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Detention Instance Section -->
+    <section class="card mb-4">
+      <div class="card-header bg-light">
+        <strong>Detention Instance</strong>
+        <span class="text-muted small ms-2">(Latest instance is shown; saving will update or create if none exists.)</span>
+      </div>
+      <div class="card-body">
+        <div class="row g-3">
+          <div class="col-md-4">
+            <label class="form-label">Status</label>
+            {{ detention_instance_form.detention_status }}
+          </div>
+          <div class="col-md-4">
+            <label class="form-label">Reason</label>
+            {{ detention_instance_form.detention_reason }}
+          </div>
+          <div class="col-md-4">
+            <label class="form-label">Room number</label>
+            {{ detention_instance_form.detention_room_number }}
+          </div>
+
+          <div class="col-md-4">
+            <label class="form-label">Term length (days)</label>
+            {{ detention_instance_form.detention_term_length }}
+          </div>
+          <div class="col-md-4">
+            <label class="form-label">Start date</label>
+            {{ detention_instance_form.detention_start_date }}
+          </div>
+          <div class="col-md-4">
+            <label class="form-label">End date</label>
+            {{ detention_instance_form.detention_end_date }}
+          </div>
+          <div class="col-12">
+            <label class="form-label">Notes</label>
+            {{ detention_instance_form.notes }}
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <div class="d-flex gap-2">
+      <button type="submit" class="btn btn-primary">
+        <i class="bi bi-save me-1"></i> Save changes
+      </button>
+      <a href="{% url 'pdl:pdl_list' %}" class="btn btn-secondary">Cancel</a>
+    </div>
+  </form>
+</div>
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+  // Grab the URL input (works with default Django naming)
+  const urlInput = document.querySelector('[name="profile_picture_url"]');
+  const previewBox = document.getElementById('profile-photo-preview');
+
+  if (!urlInput || !previewBox) return;
+
+  let debounceTimer = null;
+
+  function showPlaceholder() {
+    previewBox.innerHTML = `
+      <i class="bi bi-image fs-1 text-secondary mb-2" aria-hidden="true"></i>
+      <div class="text-muted small text-center">Paste a URL to preview</div>
+    `;
+  }
+
+  function showError() {
+    previewBox.innerHTML = `
+      <i class="bi bi-exclamation-triangle fs-1 text-danger mb-2" aria-hidden="true"></i>
+      <div class="text-danger small text-center">Unable to retrieve from URL</div>
+    `;
+  }
+
+  function showImage(src) {
+    previewBox.innerHTML = "";
+    const wrapper = document.createElement("div");
+    wrapper.className = "d-flex flex-column align-items-center w-100";
+
+    const img = document.createElement("img");
+    img.src = src;
+    img.width = 140;
+    img.height = 140;
+    img.alt = "Profile photo preview";
+    img.loading = "lazy";
+    img.referrerPolicy = "no-referrer";
+    img.className = "rounded-circle object-fit-cover border shadow-sm";
+
+    wrapper.appendChild(img);
+    previewBox.appendChild(wrapper);
+  }
+
+  function updatePreview(value) {
+    const url = (value || "").trim();
+
+    if (!url) {
+      showPlaceholder();
+      return;
+    }
+
+    // Try to load
+    const testImg = new Image();
+    // Avoid sending referrer for third-party images
+    testImg.referrerPolicy = "no-referrer";
+    testImg.onload = () => showImage(url);
+    testImg.onerror = showError;
+
+    // A quick sanity check for URL-like strings (not bulletproof, just UX)
+    try {
+      const u = new URL(url, window.location.origin);
+      // only attempt if protocol looks like http(s)
+      if (!/^https?:$/i.test(u.protocol)) {
+        showError();
+        return;
+      }
+      testImg.src = u.href;
+    } catch (e) {
+      showError();
+    }
+  }
+
+  function debouncedPreview() {
+    clearTimeout(debounceTimer);
+    debounceTimer = setTimeout(() => updatePreview(urlInput.value), 300);
+  }
+
+  // Initial render (in case form has an existing value)
+  updatePreview(urlInput.value);
+
+  // Live updates
+  urlInput.addEventListener("input", debouncedPreview);
+  urlInput.addEventListener("change", debouncedPreview);
+  urlInput.addEventListener("paste", debouncedPreview);
+  urlInput.addEventListener("blur", debouncedPreview);
+});
+</script>
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+  /* ===== Name Mirror (read-only First/Last in PDL Profile) ===== */
+  const userFirst = document.querySelector('[name="first_name"]');
+  const userLast  = document.querySelector('[name="last_name"]');
+  const roFirst   = document.getElementById('ro-first-name');
+  const roLast    = document.getElementById('ro-last-name');
+
+  function syncNames() {
+    if (roFirst && userFirst) roFirst.value = userFirst.value || '';
+    if (roLast && userLast)   roLast.value  = userLast.value  || '';
+  }
+
+  // Initial sync (handles edit pages with prefilled values)
+  syncNames();
+
+  // Live sync on typing/changes
+  if (userFirst) {
+    userFirst.addEventListener('input', syncNames);
+    userFirst.addEventListener('change', syncNames);
+  }
+  if (userLast) {
+    userLast.addEventListener('input', syncNames);
+    userLast.addEventListener('change', syncNames);
+  }
+  /* ===== /Name Mirror ===== */
+
+
+  /* ===== Existing Photo Preview code (kept as-is) ===== */
+  // ... your existing preview code below ...
+  // Grab the URL input (works with default Django naming)
+  const urlInput = document.querySelector('[name="profile_picture_url"]');
+  const previewBox = document.getElementById('profile-photo-preview');
+
+  if (!urlInput || !previewBox) return;
+
+  let debounceTimer = null;
+
+  function showPlaceholder() {
+    previewBox.innerHTML = `
+      <i class="bi bi-image fs-1 text-secondary mb-2" aria-hidden="true"></i>
+      <div class="text-muted small text-center">Paste a URL to preview</div>
+    `;
+  }
+
+  function showError() {
+    previewBox.innerHTML = `
+      <i class="bi bi-exclamation-triangle fs-1 text-danger mb-2" aria-hidden="true"></i>
+      <div class="text-danger small text-center">Unable to retrieve from URL</div>
+    `;
+  }
+
+  function showImage(src) {
+    previewBox.innerHTML = "";
+    const wrapper = document.createElement("div");
+    wrapper.className = "d-flex flex-column align-items-center w-100";
+
+    const img = document.createElement("img");
+    img.src = src;
+    img.width = 140;
+    img.height = 140;
+    img.alt = "Profile photo preview";
+    img.loading = "lazy";
+    img.referrerPolicy = "no-referrer";
+    img.className = "rounded-circle object-fit-cover border shadow-sm";
+
+    wrapper.appendChild(img);
+    previewBox.appendChild(wrapper);
+  }
+
+  function updatePreview(value) {
+    const url = (value || "").trim();
+
+    if (!url) {
+      showPlaceholder();
+      return;
+    }
+
+    const testImg = new Image();
+    testImg.referrerPolicy = "no-referrer";
+    testImg.onload = () => showImage(url);
+    testImg.onerror = showError;
+
+    try {
+      const u = new URL(url, window.location.origin);
+      if (!/^https?:$/i.test(u.protocol)) {
+        showError();
+        return;
+      }
+      testImg.src = u.href;
+    } catch (e) {
+      showError();
+    }
+  }
+
+  function debouncedPreview() {
+    clearTimeout(debounceTimer);
+    debounceTimer = setTimeout(() => updatePreview(urlInput.value), 300);
+  }
+
+  // Initial render
+  updatePreview(urlInput.value);
+
+  // Live updates
+  urlInput.addEventListener("input", debouncedPreview);
+  urlInput.addEventListener("change", debouncedPreview);
+  urlInput.addEventListener("paste", debouncedPreview);
+  urlInput.addEventListener("blur", debouncedPreview);
+});
+</script>
+
+{% endblock %}

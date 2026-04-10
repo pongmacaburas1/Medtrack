@@ -1,0 +1,61 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>{{ title }}</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<style>
+  :root{ --ink:#000; --muted:#444; --grid:#999; --bg:#fff; }
+  *{box-sizing:border-box}
+  html,body{margin:0;padding:0;background:var(--bg);color:var(--ink)}
+  body{font-family:"Courier New", Courier, monospace; font-size:14px; line-height:1.25;}
+  .wrap{max-width:100%; padding:16px}
+  h1{margin:0 0 8px 0;font-size:18px}
+  .sub{color:var(--muted);margin-bottom:16px}
+  .bar{display:flex;gap:8px;flex-wrap:wrap;align-items:center;border:1px solid var(--grid);padding:8px;margin:12px 0;background:#f9f9f9}
+  a{color:#0033cc;text-decoration:underline}
+  .table{width:100%;border-collapse:collapse;margin:10px 0 24px 0;overflow:auto;display:block}
+  .table table{min-width:1200px; border-collapse:collapse; width:100%}
+  th, td{border:1px solid var(--grid);padding:6px 8px;vertical-align:top; text-align:left}
+  th{background:#efefef}
+  .muted{color:var(--muted)}
+  .mono{font-family:"Courier New", Courier, monospace}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>{{ title }}</h1>
+  <div class="sub">Generated: <span class="mono">{{ generated }}</span></div>
+  <div class="bar"><a href="{% url 'reports:report_center' %}">&larr; Back to Report Center</a></div>
+
+  {% if rows %}
+  <div class="table">
+    <table>
+<thead>
+  <tr>
+    {% for col in columns %}
+      <th>{{ col }}</th>
+    {% endfor %}
+  </tr>
+</thead>
+<tbody>
+  {% for row in rows %}
+  <tr>
+    {% for cell in row %}
+      <td>{{ cell }}</td>
+    {% endfor %}
+  </tr>
+  {% empty %}
+  <tr><td colspan="{{ columns|length }}">No consultations found.</td></tr>
+  {% endfor %}
+</tbody>
+
+    </table>
+  </div>
+  {% else %}
+  <p class="muted">No consultations found for this selection.</p>
+  {% endif %}
+</div>
+</body>
+</html>

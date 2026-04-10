@@ -1,0 +1,110 @@
+{% extends "base.html" %}
+{% block title %}Medication Inventory Report{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+
+  <div class="d-flex align-items-center justify-content-between mb-4">
+    <div>
+      <h2 class="h4 mb-1"><i class="bi bi-box-seam me-2"></i>Medication Inventory Report</h2>
+      <small class="text-muted">Full stock status &mdash; Generated {{ today }}</small>
+    </div>
+    <div class="d-flex gap-2">
+      <a href="?export=csv" class="btn btn-outline-success btn-sm">
+        <i class="bi bi-download me-1"></i>Export CSV
+      </a>
+      <a href="{% url 'reports:report_center' %}" class="btn btn-outline-secondary btn-sm">
+        <i class="bi bi-arrow-left me-1"></i>Back to Reports
+      </a>
+    </div>
+  </div>
+
+  <!-- Summary -->
+  <div class="row g-3 mb-4">
+    <div class="col-sm-4">
+      <div class="card text-center py-3 border-success">
+        <div class="h2 mb-0 text-success">{{ adequate|length }}</div>
+        <div class="small text-muted">Adequate Stock</div>
+      </div>
+    </div>
+    <div class="col-sm-4">
+      <div class="card text-center py-3 border-warning">
+        <div class="h2 mb-0 text-warning">{{ low_stock|length }}</div>
+        <div class="small text-muted">Low Stock — Need Reorder</div>
+      </div>
+    </div>
+    <div class="col-sm-4">
+      <div class="card text-center py-3 border-danger">
+        <div class="h2 mb-0 text-danger">{{ expired|length }}</div>
+        <div class="small text-muted">Expired / Needs Disposal</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Alerts -->
+  {% if low_stock %}
+  <div class="alert alert-warning d-flex align-items-start gap-2 mb-3">
+    <i class="bi bi-exclamation-triangle-fill fs-5 mt-1"></i>
+    <div>
+      <strong>Low Stock Alert:</strong>
+      {% for inv in low_stock %}{{ inv.medication.name }}{% if not forloop.last %}, {% endif %}{% endfor %}
+    </div>
+  </div>
+  {% endif %}
+  {% if expired %}
+  <div class="alert alert-danger d-flex align-items-start gap-2 mb-3">
+    <i class="bi bi-x-circle-fill fs-5 mt-1"></i>
+    <div>
+      <strong>Expired Medications:</strong>
+      {% for inv in expired %}{{ inv.medication.name }}{% if not forloop.last %}, {% endif %}{% endfor %}
+    </div>
+  </div>
+  {% endif %}
+
+  <!-- Full table -->
+  <div class="card">
+    <div class="card-header fw-semibold"><i class="bi bi-table me-1"></i>Complete Inventory</div>
+    <div class="table-responsive">
+      <table class="table table-hover align-middle mb-0">
+        <thead class="table-dark">
+          <tr>
+            <th>Medication</th>
+            <th>Generic</th>
+            <th class="text-center">Stock Qty</th>
+            <th class="text-center">Reorder Level</th>
+            <th class="text-center">Total Dispensed</th>
+            <th>Expiry Date</th>
+            <th>Location</th>
+            <th class="text-center">Status</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for inv in inventories %}
+          <tr {% if inv.is_expired %}class="table-danger"{% elif inv.is_low_stock %}class="table-warning"{% endif %}>
+            <td class="fw-semibold">{{ inv.medication.name }}</td>
+            <td class="text-muted small">{{ inv.medication.generic_name.name }}</td>
+            <td class="text-center fw-bold">{{ inv.quantity }}</td>
+            <td class="text-center text-muted">{{ inv.reorder_level }}</td>
+            <td class="text-center">{{ dispensed_map|default_if_none:"0" }}</td>
+            <td>{{ inv.expiration_date }}</td>
+            <td>{{ inv.location }}</td>
+            <td class="text-center">
+              {% if inv.is_expired %}
+                <span class="badge bg-danger">Expired</span>
+              {% elif inv.is_low_stock %}
+                <span class="badge bg-warning text-dark">Low Stock</span>
+              {% else %}
+                <span class="badge bg-success">Adequate</span>
+              {% endif %}
+            </td>
+          </tr>
+          {% empty %}
+          <tr><td colspan="8" class="text-center text-muted py-4">No inventory records found.</td></tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+</div>
+{% endblock %}

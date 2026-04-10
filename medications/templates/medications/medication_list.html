@@ -1,0 +1,165 @@
+
+{% extends 'base.html' %}
+{% load static %}
+{% load medication_filters %}
+
+{% block title %}Medication Inventory List{% endblock %}
+
+{% block content %}
+<div class="container-fluid mt-4">
+    <div class="row mb-3">
+        <div class="col">
+            <h2>Medication Inventory</h2>
+        </div>
+        <div class="col text-end">
+            <a href="{% url 'medications:add_medication' %}" class="btn btn-primary">
+                <i class="fas fa-plus"></i> Add Medication
+            </a>
+        </div>
+    </div>
+
+    <div class="card">
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table table-striped table-hover">
+                    <thead class="table-dark">
+                        <tr>
+                            <th>Brand Name</th>
+                            <th>Generic Name</th>
+                            <th>Type</th>
+                            <th>Strength</th>
+                            <th>Dosage Form</th>
+                            <th>Route</th>
+                            <th>Manufacturer</th>
+                            <th>Stock Quantity</th>
+                            <th>Location</th>
+                            <th>Expiration</th>
+                            <th>Status</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for medication in medications %}
+                        <tr>
+                            <td><strong>{{ medication.name }}</strong></td>
+                            <td class="text-muted">{{ medication.generic_name.name }}</td>
+                            <td>
+                                <span class="badge bg-info">
+                                    {{ medication.generic_name.medication_type.name }}
+                                </span>
+                            </td>
+                            <td>{{ medication.strength }}</td>
+                            <td>{{ medication.get_dosage_form_display }}</td>
+                            <td>{{ medication.get_route_of_administration_display }}</td>
+                            <td>{{ medication.manufacturer }}</td>
+                            
+                            {% with inventory=medication.medicationinventory_set.first %}
+                                {% if inventory %}
+                                    <td>
+                                        <span class="{% if inventory.is_low_stock %}text-danger fw-bold{% elif inventory.quantity > inventory.reorder_level * 2 %}text-success{% else %}text-warning{% endif %}">
+                                            {{ inventory.quantity }} units
+                                        </span>
+                                        <small class="text-muted d-block">
+                                            Reorder at: {{ inventory.reorder_level }}
+                                        </small>
+                                    </td>
+                                    <td>{{ inventory.location }}</td>
+                                    <td>
+                                        <span class="{% if inventory.is_expired %}text-danger{% else %}text-muted{% endif %}">
+                                            {{ inventory.expiration_date|date:"M d, Y" }}
+                                        </span>
+                                    </td>
+                                    <td>
+                                        {% if inventory.is_expired %}
+                                            <span class="badge bg-danger">Expired</span>
+                                        {% elif inventory.is_low_stock %}
+                                            <span class="badge bg-warning text-dark">Low Stock</span>
+                                        {% else %}
+                                            <span class="badge bg-success">In Stock</span>
+                                        {% endif %}
+                                    </td>
+                                {% else %}
+                                    <td colspan="4" class="text-center text-muted">
+                                        <em>No inventory data</em>
+                                    </td>
+                                {% endif %}
+                            {% endwith %}
+                            
+                            <td class="text-nowrap">
+                                <a href="{% url 'medications:medication_detail' medication.id %}" 
+                                   class="btn btn-sm btn-info" title="View Details">
+                                    <i class="fas fa-eye"></i>
+                                </a>
+                                <a href="{% url 'medications:update_inventory' medication.id %}" 
+                                   class="btn btn-sm btn-warning" title="Update Inventory">
+                                    <i class="fas fa-edit"></i>
+                                </a>
+                                <a href="{% url 'medications:medication_history' medication.id %}" 
+                                   class="btn btn-sm btn-secondary" title="View History">
+                                    <i class="fas fa-history"></i>
+                                </a>
+                            </td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="12" class="text-center text-muted py-4">
+                                <i class="fas fa-inbox fa-3x mb-3"></i>
+                                <p>No medications found in the system.</p>
+                                <a href="{% url 'medications:add_medication' %}" class="btn btn-primary">
+                                    Add First Medication
+                                </a>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- Summary Cards -->
+    <div class="row mt-4">
+        <div class="col-md-3">
+            <div class="card bg-primary text-white">
+                <div class="card-body">
+                    <h5 class="card-title">Total Medications</h5>
+                    <h2>{{ medications.count }}</h2>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card bg-warning text-dark">
+                <div class="card-body">
+                    <h5 class="card-title">Low Stock Items</h5>
+                    <h2>{{ medications|count_low_stock }}</h2>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card bg-danger text-white">
+                <div class="card-body">
+                    <h5 class="card-title">Expired Items</h5>
+                    <h2>{{ medications|count_expired }}</h2>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card bg-success text-white">
+                <div class="card-body">
+                    <h5 class="card-title">In Stock</h5>
+                    <h2>{{ medications|count_in_stock }}</h2>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .table td {
+        vertical-align: middle;
+    }
+    .badge {
+        font-size: 0.85rem;
+    }
+</style>
+{% endblock %}

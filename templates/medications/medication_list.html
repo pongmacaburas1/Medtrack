@@ -1,0 +1,229 @@
+{% extends "base.html" %}
+
+{% block title %}Current Prescriptions by PDL{% endblock %}
+
+{% block content %}
+<style>
+    /* Ito ang sekreto para maging pantay-pantay ang lahat ng cards */
+    .fixed-table {
+        table-layout: fixed;
+        width: 100%;
+    }
+    /* Sineset natin ang width ng bawat column para kahit mahaba ang text, hindi gagalaw ang alignment */
+    .col-med { width: 15%; }
+    .col-gen { width: 15%; }
+    .col-dos { width: 8%; }
+    .col-freq { width: 12%; }
+    .col-dur { width: 10%; }
+    .col-qty { width: 10%; }
+    .col-stat { width: 12%; }
+    .col-by { width: 10%; }
+    .col-act { width: 8%; }
+
+    .table td, .table th {
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+    }
+</style>
+
+<div class="container mt-4 pb-5">
+    <div class="d-flex flex-wrap justify-content-between align-items-center mb-3 gap-2">
+        <div>
+            <h1 class="h3 m-0 fw-bold">Current Prescriptions by PDL</h1>
+            <div class="text-muted small">
+                <span class="badge bg-primary-subtle text-primary rounded-pill">{{ totals.rx_count }} prescriptions</span>
+                <span class="badge bg-secondary-subtle text-secondary rounded-pill ms-1">{{ totals.pdl_count }} PDLs</span>
+            </div>
+        </div>
+        <a class="btn btn-success fw-bold shadow-sm" href="{% url 'medications:prescription_create' %}">
+            <i class="bi bi-plus-circle me-1"></i>Add Prescription
+        </a>
+    </div>
+
+    <div class="card card-body border-0 shadow-sm mb-4 bg-light">
+        <form method="get" class="row g-2 align-items-end">
+            <div class="col-md-6">
+                <label class="form-label small fw-bold text-muted">Search (PDL or Medication)</label>
+                <div class="input-group">
+                    <span class="input-group-text bg-white border-end-0"><i class="bi bi-search text-muted"></i></span>
+                    <input type="text" class="form-control border-start-0 shadow-none" name="q" value="{{ q }}" placeholder="e.g., Dela Cruz, Amoxicillin">
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="d-flex gap-2">
+                    <button type="submit" class="btn btn-primary px-4 fw-bold">Filter</button>
+                    <a href="{% url 'medications:medication_list' %}" class="btn btn-outline-secondary px-4">Reset</a>
+                </div>
+            </div>
+        </form>
+    </div>
+
+    {% if grouped_by_pdl %}
+        {% for p in grouped_by_pdl.values %}
+            {% with pdl=p.pdl items=p.items %}
+            <div class="card mb-4 border-0 shadow-sm overflow-hidden" style="border-radius: 12px;">
+                <div class="card-header d-flex justify-content-between align-items-center bg-white py-3 border-bottom">
+                    <div class="d-flex align-items-center gap-3">
+                        <div class="rounded-circle bg-light d-flex align-items-center justify-content-center border shadow-sm" style="width: 45px; height: 45px;">
+                            <i class="bi bi-person-circle fs-3 text-secondary"></i>
+                        </div>
+                        <div>
+                            <div class="fw-bold text-dark fs-5 mb-0">{{ pdl.username.get_full_name|default:pdl.username.username }}</div>
+                            <div class="text-muted small">@{{ pdl.username.username }}</div>
+                        </div>
+                    </div>
+                    <span class="badge text-bg-primary rounded-pill px-3 py-2 fw-bold shadow-sm">{{ items|length }} RX</span>
+                </div>
+
+                <div class="card-body p-0">
+                    <div class="table-responsive">
+                        <table class="table table-hover m-0 align-middle fixed-table">
+                            <thead class="table-light">
+                                <tr class="small text-uppercase fw-bold text-muted">
+                                    <th class="ps-3 col-med">Medication</th>
+                                    <th class="col-gen">Generic</th>
+                                    <th class="col-dos">Dosage</th>
+                                    <th class="col-freq">Frequency</th>
+                                    <th class="col-dur">Duration</th>
+                                    <th class="text-center col-qty">Qty (P/D)</th>
+                                    <th class="text-center col-stat">Status</th>
+                                    <th class="col-by">Prescribed By</th>
+                                    <th class="text-center col-act">Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for rx in items %}
+                                <tr>
+                                    <td class="ps-3 fw-bold text-primary">{{ rx.medication.name }}</td>
+                                    <td class="text-muted small italic">{{ rx.medication.generic_name.name }}</td>
+                                    <td class="fw-semibold">{{ rx.dosage }}</td>
+                                    <td class="small">{{ rx.frequency }}</td>
+                                    <td class="small">{{ rx.duration|default:"---" }}</td>
+                                    <td class="text-center fw-bold small">
+                                        {{ rx.quantity_prescribed|default:"0" }} / {{ rx.quantity_dispensed|default:"0" }}
+                                    </td>
+                                    
+                                    <td class="text-center">
+                                        {% with s=rx.status|title %}
+                                            {% if s == 'Dispensed' %}
+                                                <span class="badge rounded-pill bg-success-subtle text-success border border-success px-2 py-1 shadow-sm small">
+                                                    <i class="bi bi-check-circle-fill"></i> Dispensed
+                                                </span>
+                                            {% elif s == 'Partially Dispensed' %}
+                                                <span class="badge rounded-pill bg-warning-subtle text-dark border border-warning px-2 py-1 shadow-sm small">
+                                                    <i class="bi bi-hourglass-split"></i> Partial
+                                                </span>
+                                            {% else %}
+                                                <span class="badge rounded-pill bg-info-subtle text-info border border-info px-2 py-1 shadow-sm small">
+                                                    <i class="bi bi-clock-history"></i> Ongoing
+                                                </span>
+                                            {% endif %}
+                                        {% endwith %}
+                                    </td>
+
+                                    <td class="small text-muted">{{ rx.prescribed_by.username }}</td>
+                                    
+                                    <td class="pe-3 text-center">
+                                        <div class="btn-group btn-group-sm">
+                                            <a class="btn btn-outline-primary" href="{% url 'medications:prescription_printable' rx.id %}"><i class="bi bi-printer"></i></a>
+                                            <a class="btn btn-outline-warning" href="{% url 'medications:prescription_update' rx.id %}"><i class="bi bi-pencil-square"></i></a>
+                                            <button type="button" class="btn btn-outline-danger js-delete-rx" 
+                                                    data-name="{{ pdl.username.username }} - {{ rx.medication.name }}"
+                                                    data-delete-url="{% url 'medications:prescription_delete' rx.id %}"
+                                                    data-bs-toggle="modal" data-bs-target="#deleteRxModal">
+                                                <i class="bi bi-trash"></i>
+                                            </button>
+                                        </div>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+            {% endwith %}
+        {% endfor %}
+        
+        <!-- Pagination -->
+        {% if page_obj and page_obj.paginator.num_pages > 1 %}
+        <div class="d-flex justify-content-center mt-4">
+            <nav aria-label="Page navigation">
+                <ul class="pagination">
+                    {% if page_obj.has_previous %}
+                        <li class="page-item">
+                            <a class="page-link" href="?page=1{% if q %}&q={{ q }}{% endif %}">&laquo;&laquo;</a>
+                        </li>
+                        <li class="page-item">
+                            <a class="page-link" href="?page={{ page_obj.previous_page_number }}{% if q %}&q={{ q }}{% endif %}">&laquo;</a>
+                        </li>
+                    {% else %}
+                        <li class="page-item disabled"><span class="page-link">&laquo;&laquo;</span></li>
+                        <li class="page-item disabled"><span class="page-link">&laquo;</span></li>
+                    {% endif %}
+
+                    {% for num in page_obj.paginator.page_range %}
+                        {% if page_obj.number == num %}
+                            <li class="page-item active"><span class="page-link">{{ num }}</span></li>
+                        {% elif num > page_obj.number|add:'-3' and num < page_obj.number|add:'3' %}
+                            <li class="page-item"><a class="page-link" href="?page={{ num }}{% if q %}&q={{ q }}{% endif %}">{{ num }}</a></li>
+                        {% endif %}
+                    {% endfor %}
+
+                    {% if page_obj.has_next %}
+                        <li class="page-item">
+                            <a class="page-link" href="?page={{ page_obj.next_page_number }}{% if q %}&q={{ q }}{% endif %}">&raquo;</a>
+                        </li>
+                        <li class="page-item">
+                            <a class="page-link" href="?page={{ page_obj.paginator.num_pages }}{% if q %}&q={{ q }}{% endif %}">&raquo;&raquo;</a>
+                        </li>
+                    {% else %}
+                        <li class="page-item disabled"><span class="page-link">&raquo;</span></li>
+                        <li class="page-item disabled"><span class="page-link">&raquo;&raquo;</span></li>
+                    {% endif %}
+                </ul>
+            </nav>
+        </div>
+        {% endif %}
+        
+    {% else %}
+        <div class="alert alert-light text-center py-5 shadow-sm border">
+            <i class="bi bi-clipboard2-x fs-1 text-muted"></i>
+            <p class="mt-3 text-muted fw-bold">No prescription records found.</p>
+        </div>
+    {% endif %}
+</div>
+
+<div class="modal fade" id="deleteRxModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content border-0 shadow">
+            <form id="deleteRxForm" method="post">
+                {% csrf_token %}
+                <div class="modal-header bg-danger text-white border-0">
+                    <h5 class="modal-title fw-bold">Confirm Deletion</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body p-4 text-center">
+                    <p class="text-muted">Delete prescription for:</p>
+                    <strong id="deleteRxName" class="text-danger"></strong>
+                </div>
+                <div class="modal-footer border-0">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-danger">Delete</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<script>
+    document.addEventListener('click', function (e) {
+        const btn = e.target.closest('.js-delete-rx');
+        if (btn) {
+            document.getElementById('deleteRxName').textContent = btn.getAttribute('data-name');
+            document.getElementById('deleteRxForm').setAttribute('action', btn.getAttribute('data-delete-url'));
+        }
+    });
+</script>
+{% endblock %}

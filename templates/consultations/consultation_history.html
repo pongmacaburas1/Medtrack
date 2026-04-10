@@ -1,0 +1,283 @@
+{% extends "base.html" %}
+
+{% block title %}Consultation History — MedTrack{% endblock %}
+
+{% block content %}
+<style>
+  .history-wrap { padding: 2rem 1.5rem; max-width: 1400px; margin: 0 auto; }
+  
+  .history-header {
+    display: flex; align-items: center; justify-content: space-between;
+    flex-wrap: wrap; gap: 1rem; margin-bottom: 1.75rem;
+  }
+  .history-title { font-size: 1.45rem; font-weight: 700; margin: 0; }
+  .history-subtitle { font-size: .82rem; opacity: .55; margin-top: .15rem; }
+
+  /* Stats */
+  .stat-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 1rem; margin-bottom: 1.75rem; }
+  .stat-card {
+    border-radius: 14px; padding: 1rem 1.25rem;
+    display: flex; align-items: center; gap: 1rem;
+    border: 1px solid transparent;
+  }
+  [data-bs-theme="dark"]  .stat-card { background: rgba(255,255,255,.04); border-color: rgba(255,255,255,.07); }
+  [data-bs-theme="light"] .stat-card { background: #fff; border-color: #e9ecef; box-shadow: 0 2px 8px rgba(0,0,0,.05); }
+  .stat-icon {
+    width: 42px; height: 42px; border-radius: 10px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 1.15rem; flex-shrink: 0;
+  }
+  .stat-icon.c-blue    { background: rgba(59,130,246,.15);  color: #3b82f6; }
+  .stat-icon.c-emerald { background: rgba(16,185,129,.15);  color: #10b981; }
+  .stat-icon.c-rose    { background: rgba(244,63,94,.15);   color: #f43f5e; }
+  .stat-icon.c-amber   { background: rgba(245,158,11,.15);  color: #f59e0b; }
+  .stat-val { font-size: 1.5rem; font-weight: 700; line-height: 1; }
+  .stat-lbl { font-size: .72rem; opacity: .5; font-weight: 500; margin-top: .15rem; text-transform: uppercase; letter-spacing: .04em; }
+
+  /* Filter Card */
+  .filter-card {
+    border-radius: 14px; padding: 1rem 1.25rem; margin-bottom: 1.5rem;
+  }
+  [data-bs-theme="dark"]  .filter-card { background: rgba(255,255,255,.04); border: 1px solid rgba(255,255,255,.07); }
+  [data-bs-theme="light"] .filter-card { background: #fff; border: 1px solid #e9ecef; box-shadow: 0 2px 8px rgba(0,0,0,.05); }
+
+  /* Table Card */
+  .panel-card { border-radius: 14px; overflow: hidden; }
+  [data-bs-theme="dark"]  .panel-card { background: rgba(255,255,255,.04); border: 1px solid rgba(255,255,255,.07); }
+  [data-bs-theme="light"] .panel-card { background: #fff; border: 1px solid #e9ecef; box-shadow: 0 2px 12px rgba(0,0,0,.05); }
+
+  .panel-head {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 1rem 1.25rem; border-bottom: 1px solid rgba(128,128,128,.12);
+    flex-wrap: wrap; gap: .5rem;
+  }
+  .panel-head-title { font-size: .95rem; font-weight: 700; margin: 0; }
+
+  /* Table */
+  .history-table { width: 100%; border-collapse: collapse; }
+  .history-table thead tr {
+    font-size: .73rem; text-transform: uppercase; letter-spacing: .06em; font-weight: 600;
+  }
+  [data-bs-theme="dark"]  .history-table thead tr { color: rgba(255,255,255,.4); }
+  [data-bs-theme="light"] .history-table thead tr { color: rgba(0,0,0,.4); }
+  .history-table thead th { padding: .65rem 1rem; font-weight: 600; }
+  .history-table tbody tr {
+    border-top: 1px solid rgba(128,128,128,.08);
+    transition: background .15s;
+  }
+  [data-bs-theme="dark"]  .history-table tbody tr:hover { background: rgba(255,255,255,.03); }
+  [data-bs-theme="light"] .history-table tbody tr:hover { background: #f8f9fa; }
+  .history-table tbody td { padding: .75rem 1rem; vertical-align: middle; font-size: .86rem; }
+
+  /* Status Badges */
+  .status-badge {
+    display: inline-flex; align-items: center; gap: .25rem;
+    font-size: .7rem; font-weight: 700; padding: .2rem .6rem;
+    border-radius: 50px; letter-spacing: .03em; text-transform: uppercase;
+  }
+  .status-badge.st-completed  { background: rgba(16,185,129,.12);  color: #10b981; border: 1px solid rgba(16,185,129,.2); }
+  .status-badge.st-scheduled  { background: rgba(59,130,246,.12);  color: #3b82f6; border: 1px solid rgba(59,130,246,.2); }
+  .status-badge.st-cancelled  { background: rgba(244,63,94,.12);   color: #f43f5e; border: 1px solid rgba(244,63,94,.2); }
+
+  /* Pagination */
+  .pagination-wrap { display: flex; justify-content: center; padding: 1.25rem; }
+  .pagination-container { display: flex; gap: 6px; align-items: center; padding: 6px; border-radius: 12px; }
+  [data-bs-theme="dark"]  .pagination-container { background: rgba(255,255,255,.04); }
+  [data-bs-theme="light"] .pagination-container { background: #fff; box-shadow: 0 2px 8px rgba(0,0,0,.05); border: 1px solid #e9ecef; }
+  .page-link-custom { display: flex; align-items: center; justify-content: center; min-width: 34px; height: 34px; padding: 0 .5rem; text-decoration: none; font-weight: 600; font-size: .85rem; border-radius: 8px; transition: all 0.2s; }
+  [data-bs-theme="dark"]  .page-link-custom { color: rgba(255,255,255,.6); }
+  [data-bs-theme="light"] .page-link-custom { color: #495057; }
+  .page-link-custom:hover:not(.active):not(.disabled) { background: rgba(16,185,129,.12); color: #10b981; }
+  .page-link-custom.active { background: #10b981; color: #fff; }
+  .page-link-custom.disabled { opacity: .35; cursor: not-allowed; }
+
+  .empty-state { text-align: center; padding: 3rem 1rem; opacity: .45; }
+  .empty-state i { font-size: 2.5rem; display: block; margin-bottom: .75rem; }
+</style>
+
+<div class="history-wrap">
+
+  <!-- Header -->
+  <div class="history-header">
+    <div>
+      <h1 class="history-title">
+        <i class="bi bi-clock-history me-2" style="color:#10b981;"></i>Consultation History
+      </h1>
+      <p class="history-subtitle">View and search all consultation records</p>
+    </div>
+    <a href="{% url 'consultations:consultation_calendar' %}" class="btn btn-sm fw-bold px-3" style="background:#10b981;color:#fff;">
+      <i class="bi bi-calendar3 me-1"></i> View Calendar
+    </a>
+  </div>
+
+  <!-- Stats -->
+  <div class="stat-grid">
+    <div class="stat-card">
+      <div class="stat-icon c-blue"><i class="bi bi-clipboard2-pulse-fill"></i></div>
+      <div>
+        <div class="stat-val">{{ stats.total }}</div>
+        <div class="stat-lbl">Total</div>
+      </div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-icon c-emerald"><i class="bi bi-check-circle-fill"></i></div>
+      <div>
+        <div class="stat-val">{{ stats.completed }}</div>
+        <div class="stat-lbl">Completed</div>
+      </div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-icon c-amber"><i class="bi bi-calendar-check-fill"></i></div>
+      <div>
+        <div class="stat-val">{{ stats.scheduled }}</div>
+        <div class="stat-lbl">Scheduled</div>
+      </div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-icon c-rose"><i class="bi bi-x-circle-fill"></i></div>
+      <div>
+        <div class="stat-val">{{ stats.cancelled }}</div>
+        <div class="stat-lbl">Cancelled</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Filter -->
+  <div class="filter-card">
+    <form method="get" class="row g-2 align-items-end">
+      <div class="col-md-5">
+        <label class="form-label small fw-bold" style="opacity:.6;">Search</label>
+        <input type="text" name="q" class="form-control form-control-sm" placeholder="PDL name, physician, or reason..." value="{{ q }}">
+      </div>
+      <div class="col-md-3">
+        <label class="form-label small fw-bold" style="opacity:.6;">Status</label>
+        <select name="status" class="form-select form-select-sm">
+          <option value="">All Status</option>
+          <option value="scheduled" {% if status_filter == 'scheduled' %}selected{% endif %}>Scheduled</option>
+          <option value="completed" {% if status_filter == 'completed' %}selected{% endif %}>Completed</option>
+          <option value="canceled" {% if status_filter == 'canceled' %}selected{% endif %}>Canceled</option>
+        </select>
+      </div>
+      <div class="col-md-4 d-flex gap-2">
+        <button type="submit" class="btn btn-sm btn-primary flex-grow-1">
+          <i class="bi bi-funnel me-1"></i> Filter
+        </button>
+        <a href="{% url 'consultations:consultation_history' %}" class="btn btn-sm btn-outline-secondary flex-grow-1">Reset</a>
+      </div>
+    </form>
+  </div>
+
+  <!-- Table -->
+  <div class="panel-card">
+    <div class="panel-head">
+      <h2 class="panel-head-title"><i class="bi bi-list-ul me-2 opacity-50"></i>Consultation Records</h2>
+      <span class="badge bg-secondary-subtle text-secondary fw-normal">{{ stats.total }} record{{ stats.total|pluralize }}</span>
+    </div>
+
+    {% if consultations %}
+    <div class="table-responsive">
+      <table class="history-table">
+        <thead>
+          <tr>
+            <th style="width:18%">Date & Time</th>
+            <th style="width:20%">PDL</th>
+            <th style="width:18%">Physician</th>
+            <th style="width:18%">Reason</th>
+            <th style="width:12%">Location</th>
+            <th style="width:10%">Status</th>
+            <th style="width:4%; text-align:center;">View</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for c in consultations %}
+          <tr>
+            <td>
+              <div class="fw-semibold">{{ c.consultation_date_date_only|date:"M d, Y" }}</div>
+              <div style="font-size:.75rem; opacity:.5;">{{ c.consultation_time_block_display }}</div>
+            </td>
+            <td>
+              <div class="fw-semibold">{{ c.pdl_profile.username.get_full_name|default:c.pdl_profile.username.username }}</div>
+              <div style="font-size:.75rem; opacity:.5;">@{{ c.pdl_profile.username.username }}</div>
+            </td>
+            <td>
+              {% if c.physician %}
+                {{ c.physician.username.first_name }} {{ c.physician.username.last_name }}
+              {% else %}
+                <span style="opacity:.4;">—</span>
+              {% endif %}
+            </td>
+            <td>
+              {% if c.reason %}
+                {{ c.reason.reason }}
+              {% else %}
+                <span style="opacity:.4;">—</span>
+              {% endif %}
+            </td>
+            <td>
+              {% if c.location %}
+                {{ c.location.name }}
+              {% else %}
+                <span style="opacity:.4;">—</span>
+              {% endif %}
+            </td>
+            <td>
+              {% if c.status == 'completed' %}
+                <span class="status-badge st-completed"><i class="bi bi-check-circle"></i> Completed</span>
+              {% elif c.status == 'canceled' %}
+                <span class="status-badge st-canceled"><i class="bi bi-x-circle"></i> Canceled</span>
+              {% else %}
+                <span class="status-badge st-scheduled"><i class="bi bi-clock"></i> Scheduled</span>
+              {% endif %}
+            </td>
+            <td style="text-align:center;">
+              <a href="{% url 'consultations:consultation_printable' c.pk %}" class="btn btn-sm btn-outline-secondary" title="View Details">
+                <i class="bi bi-eye"></i>
+              </a>
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+
+    <!-- Pagination -->
+    {% if page_obj.paginator.num_pages > 1 %}
+    <div class="pagination-wrap">
+      <div class="pagination-container">
+        {% if page_obj.has_previous %}
+          <a class="page-link-custom" href="?page=1{% if q %}&q={{ q }}{% endif %}{% if status_filter %}&status={{ status_filter }}{% endif %}">&laquo;&laquo;</a>
+          <a class="page-link-custom" href="?page={{ page_obj.previous_page_number }}{% if q %}&q={{ q }}{% endif %}{% if status_filter %}&status={{ status_filter }}{% endif %}">&laquo;</a>
+        {% else %}
+          <span class="page-link-custom disabled">&laquo;&laquo;</span>
+          <span class="page-link-custom disabled">&laquo;</span>
+        {% endif %}
+
+        {% for num in page_obj.paginator.page_range %}
+          {% if page_obj.number == num %}
+            <span class="page-link-custom active">{{ num }}</span>
+          {% elif num > page_obj.number|add:'-3' and num < page_obj.number|add:'3' %}
+            <a class="page-link-custom" href="?page={{ num }}{% if q %}&q={{ q }}{% endif %}{% if status_filter %}&status={{ status_filter }}{% endif %}">{{ num }}</a>
+          {% endif %}
+        {% endfor %}
+
+        {% if page_obj.has_next %}
+          <a class="page-link-custom" href="?page={{ page_obj.next_page_number }}{% if q %}&q={{ q }}{% endif %}{% if status_filter %}&status={{ status_filter }}{% endif %}">&raquo;</a>
+          <a class="page-link-custom" href="?page={{ page_obj.paginator.num_pages }}{% if q %}&q={{ q }}{% endif %}{% if status_filter %}&status={{ status_filter }}{% endif %}">&raquo;&raquo;</a>
+        {% else %}
+          <span class="page-link-custom disabled">&raquo;</span>
+          <span class="page-link-custom disabled">&raquo;&raquo;</span>
+        {% endif %}
+      </div>
+    </div>
+    {% endif %}
+
+    {% else %}
+    <div class="empty-state">
+      <i class="bi bi-clipboard2-x"></i>
+      <div>No consultation records found.</div>
+    </div>
+    {% endif %}
+  </div>
+
+</div>
+{% endblock %}

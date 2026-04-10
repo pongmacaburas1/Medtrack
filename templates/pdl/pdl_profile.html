@@ -1,0 +1,525 @@
+{% extends "base.html" %}
+
+{% block title %}
+PDL Profile - {{ pdl.pdl_profile }}
+{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+<div class="d-flex align-items-center justify-content-between mb-5 pt-3">
+  <h1 class="h3 m-0">
+    <i class="bi bi-person-badge pe-2"></i>
+    PDL Profile
+  </h1>
+
+ 
+ 
+    <a href="{% url 'pdl:edit_pdl' pdl.id %}" class="btn btn-outline-primary btn-sm">
+      <i class="bi bi-pencil-square me-1"></i>
+      Edit profile
+    </a>
+</div>
+
+    <div class="row d-flex align-items-stretch">
+
+        <!-- Left: Personal Info (with large avatar) -->
+        <div class="col-md-4 mb-3">
+            <div class="card px-5 py-5 h-100">
+                <h5 class="pb-4">
+                    <i class="bi bi-person-circle pe-1"></i>
+                    Personal Information
+                </h5>
+
+
+
+                <!-- Avatar + quick identity -->
+                <div class="d-flex align-items-center gap-3 pb-4 mb-4 border-bottom">
+                    {% if pdl.profile_picture_url %}
+                        <img
+                          src="{{ pdl.profile_picture_url }}"
+                          alt="{{ pdl.username.get_full_name|default:pdl.username.username }} avatar"
+                          class="rounded-circle object-fit-cover shadow-sm border"
+                          width="96" height="96"
+                          loading="lazy" referrerpolicy="no-referrer">
+                    {% else %}
+                        <div class="rounded-circle bg-light border d-flex align-items-center justify-content-center shadow-sm"
+                             style="width:96px;height:96px;">
+                            <i class="bi bi-person fs-1 text-secondary" aria-hidden="true"></i>
+                            <span class="visually-hidden">No profile photo</span>
+                        </div>
+                    {% endif %}
+
+                    <div>
+                        <div class="fw-semibold">
+                            {{ pdl }}
+                        </div>
+                        <div class="text-muted small">@{{ pdl.username.username }}</div>
+                    </div>
+                </div>
+
+                <p>
+                    <i class="bi bi-person pe-2"></i>
+                    <strong>Name:</strong> {{ pdl }}
+                </p>
+                <p>
+                    <i class="bi bi-shield-lock pe-2"></i>
+                    <strong>Detention Status:</strong> {{ detention_instance.detention_status }}
+                </p>
+                <p>
+                    <i class="bi bi-exclamation-circle pe-2"></i>
+                    <strong>Detention Reason:</strong> {{ detention_instance.detention_reason }}
+                </p>
+                <p>
+                    <i class="bi bi-calendar-check pe-2"></i>
+                    <strong>Detention Term Length:</strong> {{ detention_instance.detention_term_length }}
+                </p>
+                                <div class="my-2 small text-muted">
+                    See full profile details below.
+                </div>
+            </div>
+        </div>
+
+        <!-- Middle: Consultations -->
+        <div class="col-md-4 mb-3">
+            <div class="card p-5 h-100">
+                <h5 class="pb-3 d-flex align-items-center">
+                    <i class="bi bi-journal-medical pe-2"></i>
+                    <span>Consultations</span>
+                </h5>
+
+                {% if consultations %}
+                    {% for consultation in consultations %}
+                        <div class="d-flex align-items-center border-bottom pb-2 mb-3">
+                            <i class="bi bi-chat-left-dots pe-2 text-secondary"></i>
+                            <a href="#"
+                               class="ps-2 small text-decoration-none {% if consultation.status == 'canceled' %}text-decoration-line-through{% endif %}"
+                               data-bs-toggle="modal"
+                               data-bs-target="#consultationModal{{ forloop.counter }}">
+                                {{ consultation }}
+                            </a>
+                            {% if consultation.status == 'canceled' %}
+                                <span class="text-danger small fw-medium ms-2">(Canceled)</span>
+                            {% endif %}
+                        </div>
+
+                        <!-- Modal -->
+                        <div class="modal fade" id="consultationModal{{ forloop.counter }}" tabindex="-1" aria-labelledby="consultationModalLabel{{ forloop.counter }}" aria-hidden="true">
+                            <div class="modal-dialog">
+                                <div class="modal-content">
+                                    <div class="modal-header">
+                                        <h5 class="modal-title" id="consultationModalLabel{{ forloop.counter }}">Consultation Details</h5>
+                                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                    </div>
+                                    <div class="modal-body p-4">
+                                        <div class="d-flex align-items-start mb-3">
+                                            <i class="bi bi-calendar-event text-secondary me-3 fs-5"></i>
+                                            <div>
+                                                <p class="small text-muted mb-0">Date</p>
+                                                <p class="mb-0">{{ consultation.consultation_date_date_only }}</p>
+                                            </div>
+                                        </div>
+
+                                        <div class="d-flex align-items-start mb-3">
+                                            <i class="bi bi-clock text-secondary me-3 fs-5"></i>
+                                            <div>
+                                                <p class="small text-muted mb-0">Time</p>
+                                                <p class="mb-0">{{ consultation.consultation_time_block_display|default:"—" }}</p>
+                                            </div>
+                                        </div>
+
+                                        <div class="d-flex align-items-start mb-3">
+                                            <i class="bi bi-person-badge text-secondary me-3 fs-5"></i>
+                                            <div>
+                                                <p class="small text-muted mb-0">Physician</p>
+                                                <p class="mb-0">{{ consultation.physician|default:"—" }}</p>
+                                            </div>
+                                        </div>
+
+                                        <div class="d-flex align-items-start mb-3">
+                                            <i class="bi bi-geo-alt text-secondary me-3 fs-5"></i>
+                                            <div>
+                                                <p class="small text-muted mb-0">Location</p>
+                                                <p class="mb-0">{{ consultation.location }}</p>
+                                            </div>
+                                        </div>
+
+                                        <div class="d-flex align-items-start mb-3">
+                                            <i class="bi bi-chat-quote text-secondary me-3 fs-5"></i>
+                                            <div>
+                                                <p class="small text-muted mb-0">Reason</p>
+                                                <p class="mb-0">{{ consultation.reason|default:"—" }}</p>
+                                            </div>
+                                        </div>
+
+                                        <div class="d-flex align-items-start">
+                                            <i class="bi bi-journal-text text-secondary me-3 fs-5"></i>
+                                            <div>
+                                                <p class="small text-muted mb-0">Notes</p>
+                                                <p class="mb-0">{{ consultation.notes }}</p>
+                                            </div>
+                                        </div>
+                                    </div> <!-- /modal-body -->
+                                </div>
+                            </div>
+                        </div>
+                    {% endfor %}
+                {% else %}
+                    <p class="text-muted fst-italic">No consultations available.</p>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- Right: Medications -->
+        <div class="col-md-4 mb-3">
+            <div class="card p-5 h-100">
+                <h5 class="pb-3 d-flex align-items-center">
+                    <i class="bi bi-capsule pe-2"></i>
+                    <span>Medications</span>
+                </h5>
+
+                {% if prescriptions %}
+                    {% for prescription in prescriptions %}
+                        <div class="d-flex align-items-center border-bottom pb-2 mb-3">
+                            <i class="bi bi-capsule-pill pe-2 text-secondary"></i>
+                            <a href="#" class="ps-2 small text-decoration-none" data-bs-toggle="modal" data-bs-target="#prescriptionModal{{ forloop.counter }}">
+                                {{ prescription.medication }} &middot; {{ prescription.dosage }}
+                            </a>
+                        </div>
+
+                        <!-- Modal -->
+                        <div class="modal fade" id="prescriptionModal{{ forloop.counter }}" tabindex="-1" aria-labelledby="prescriptionModalLabel{{ forloop.counter }}" aria-hidden="true">
+                            <div class="modal-dialog">
+                                <div class="modal-content">
+                                    <div class="modal-header">
+                                        <h5 class="modal-title" id="prescriptionModalLabel{{ forloop.counter }}">Prescription Details</h5>
+                                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                    </div>
+                                    <div class="modal-body p-4">
+                                        <div class="d-flex align-items-start mb-3">
+                                            <i class="bi bi-capsule text-secondary me-3 fs-5"></i>
+                                            <div>
+                                                <p class="small text-muted mb-0">Medication</p>
+                                                <p class="mb-0">{{ prescription.medication }}</p>
+                                            </div>
+                                        </div>
+
+                                        <div class="d-flex align-items-start mb-3">
+                                            <i class="bi bi-droplet text-secondary me-3 fs-5"></i>
+                                            <div>
+                                                <p class="small text-muted mb-0">Dosage</p>
+                                                <p class="mb-0">{{ prescription.dosage }}</p>
+                                            </div>
+                                        </div>
+
+                                        <div class="d-flex align-items-start mb-3">
+                                            <i class="bi bi-clock-history text-secondary me-3 fs-5"></i>
+                                            <div>
+                                                <p class="small text-muted mb-0">Frequency</p>
+                                                <p class="mb-0">{{ prescription.frequency }}</p>
+                                            </div>
+                                        </div>
+
+                                        <div class="d-flex align-items-start mb-3">
+                                            <i class="bi bi-calendar-range text-secondary me-3 fs-5"></i>
+                                            <div>
+                                                <p class="small text-muted mb-0">Duration</p>
+                                                <p class="mb-0">{{ prescription.duration }}</p>
+                                            </div>
+                                        </div>
+
+                                        <div class="d-flex align-items-start mb-3">
+                                            <i class="bi bi-person-badge text-secondary me-3 fs-5"></i>
+                                            <div>
+                                                <p class="small text-muted mb-0">Prescribed By</p>
+                                                <p class="mb-0">{{ prescription.prescribed_by }}</p>
+                                            </div>
+                                        </div>
+                                    </div> <!-- /modal-body -->
+                                    <div class="modal-footer">
+                                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    {% endfor %}
+                {% else %}
+                    <p class="text-muted fst-italic">No medications available.</p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+    <div class="row mt-4">
+  <!-- Detention Instance -->
+  <div class="col-md-6 mb-3">
+    <div class="card p-4 h-100">
+      <h5 class="pb-3 d-flex align-items-center">
+        <i class="bi bi-building-lock pe-2"></i>
+        <span>Detention Instance</span>
+      </h5>
+
+      {% if detention_instance %}
+        <dl class="row mb-0">
+          <dt class="col-sm-5 text-muted">Status</dt>
+          <dd class="col-sm-7">{{ detention_instance.detention_status|default:"—" }}</dd>
+
+          <dt class="col-sm-5 text-muted">Reason</dt>
+          <dd class="col-sm-7">{{ detention_instance.detention_reason|default:"—" }}</dd>
+
+          <dt class="col-sm-5 text-muted">Room #</dt>
+          <dd class="col-sm-7">{{ detention_instance.detention_room_number|default:"—" }}</dd>
+
+          <dt class="col-sm-5 text-muted">Term Length</dt>
+          <dd class="col-sm-7">{{ detention_instance.detention_term_length|default:"—" }}</dd>
+
+          <dt class="col-sm-5 text-muted">Start</dt>
+          <dd class="col-sm-7">{{ detention_instance.detention_start_date|date:"Y-m-d"|default:"—" }}</dd>
+
+          <dt class="col-sm-5 text-muted">End</dt>
+          <dd class="col-sm-7">{{ detention_instance.detention_end_date|date:"Y-m-d"|default:"—" }}</dd>
+
+          <dt class="col-sm-5 text-muted">Notes</dt>
+          <dd class="col-sm-7">{{ detention_instance.notes|default:"—" }}</dd>
+        </dl>
+      {% else %}
+        <p class="text-muted fst-italic mb-0">No detention instance found.</p>
+      {% endif %}
+    </div>
+  </div>
+
+  <!-- PDL Profile Details (rest of fields) -->
+  <div class="col-md-6 mb-3">
+    <div class="card p-4 h-100">
+      <h5 class="pb-3 d-flex align-items-center">
+        <i class="bi bi-card-list pe-2"></i>
+        <span>PDL Profile Details</span>
+      </h5>
+
+
+
+      <dl class="row mb-0">
+      
+        <dt class="col-sm-5 text-muted">Sex</dt>
+        <dd class="col-sm-7">{{ pdl.get_sex_display|default:"—" }}</dd>
+
+        <dt class="col-sm-5 text-muted">Age</dt>
+        <dd class="col-sm-7">{{ pdl.age|default:"—" }}</dd>
+
+        <dt class="col-sm-5 text-muted">Civil Status</dt>
+        <dd class="col-sm-7">{{ pdl.get_civil_status_display|default:"—" }}</dd>
+
+        <dt class="col-sm-5 text-muted">Education</dt>
+        <dd class="col-sm-7">{{ pdl.get_educational_attainment_display|default:"—" }}</dd>
+
+        <dt class="col-sm-5 text-muted">Date of Birth</dt>
+        <dd class="col-sm-7">{{ pdl.date_of_birth|date:"Y-m-d"|default:"—" }}</dd>
+
+        <dt class="col-sm-5 text-muted">Place of Birth</dt>
+        <dd class="col-sm-7">
+          {% firstof pdl.place_of_birth "" %}{% if pdl.place_of_birth %}<br>{% endif %}
+          {% if pdl.place_of_birth_municipality %}{{ pdl.place_of_birth_municipality }}{% if pdl.place_of_birth_province %}, {% endif %}{% endif %}
+          {% if pdl.place_of_birth_province %}{{ pdl.place_of_birth_province }}{% if pdl.place_of_birth_region %}, {% endif %}{% endif %}
+          {% if pdl.place_of_birth_region %}{{ pdl.place_of_birth_region }}{% if pdl.place_of_birth_country %}, {% endif %}{% endif %}
+          {% if pdl.place_of_birth_country %}{{ pdl.place_of_birth_country }}{% endif %}
+          {% if not pdl.place_of_birth and not pdl.place_of_birth_municipality and not pdl.place_of_birth_province and not pdl.place_of_birth_region and not pdl.place_of_birth_country %}—{% endif %}
+        </dd>
+
+        <dt class="col-sm-5 text-muted">Date of Commitment</dt>
+        <dd class="col-sm-7">{{ pdl.date_of_commitment|date:"Y-m-d"|default:"—" }}</dd>
+
+        <dt class="col-sm-5 text-muted">Name of Jail</dt>
+        <dd class="col-sm-7">{{ pdl.name_of_jail|default:"—" }}</dd>
+
+        <dt class="col-sm-5 text-muted">Case</dt>
+        <dd class="col-sm-7">{{ pdl.case|default:"—" }}</dd>
+
+        <dt class="col-sm-5 text-muted">Case Number</dt>
+        <dd class="col-sm-7">{{ pdl.case_number|default:"—" }}</dd>
+
+        <dt class="col-sm-5 text-muted">Origin Lockup</dt>
+        <dd class="col-sm-7">{{ pdl.origin_lockup|default:"—" }}</dd>
+
+        <dt class="col-sm-5 text-muted">Contact Person</dt>
+        <dd class="col-sm-7">{{ pdl.contact_person_name|default:"—" }}</dd>
+
+        <dt class="col-sm-5 text-muted">Contact Phone</dt>
+        <dd class="col-sm-7">{{ pdl.contact_person_phone|default:"—" }}</dd>
+
+        <dt class="col-sm-5 text-muted">Contact Email</dt>
+        <dd class="col-sm-7">{{ pdl.contact_person_email|default:"—" }}</dd>
+
+        <dt class="col-sm-5 text-muted">Contact Address</dt>
+        <dd class="col-sm-7">{{ pdl.contact_person_address|linebreaksbr|default:"—" }}</dd>
+
+        <dt class="col-sm-5 text-muted">Relationship</dt>
+        <dd class="col-sm-7">{{ pdl.contact_person_relationship|default:"—" }}</dd>
+      </dl>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════ HEALTH CONDITIONS ═══════ -->
+<div class="row mt-4">
+  <div class="col-12">
+    <div class="card p-4">
+      <div class="d-flex align-items-center justify-content-between mb-3">
+        <h5 class="mb-0 d-flex align-items-center">
+          <i class="bi bi-heart-pulse pe-2 text-danger"></i>
+          Health Conditions
+        </h5>
+        <button class="btn btn-sm btn-outline-danger" data-bs-toggle="modal" data-bs-target="#addHealthConditionModal">
+          <i class="bi bi-plus-circle me-1"></i>Add Condition
+        </button>
+      </div>
+
+      {% if health_conditions %}
+        <div class="table-responsive">
+          <table class="table table-hover align-middle mb-0">
+            <thead>
+              <tr>
+                <th>Condition</th>
+                <th>Date Diagnosed</th>
+                <th>Notes</th>
+                <th class="text-center">Active</th>
+                <th>Recorded By</th>
+                <th></th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for hc in health_conditions %}
+              <tr>
+                <td>
+                  {% if hc.condition == 'HTN' %}<span class="badge bg-danger me-1">HTN</span>
+                  {% elif hc.condition == 'DM' %}<span class="badge bg-warning text-dark me-1">DM</span>
+                  {% elif hc.condition == 'HEART' %}<span class="badge bg-danger me-1"><i class="bi bi-heart"></i></span>
+                  {% elif hc.condition == 'TB' %}<span class="badge bg-secondary me-1">TB</span>
+                  {% else %}<span class="badge bg-info me-1">{{ hc.condition }}</span>
+                  {% endif %}
+                  {{ hc.get_condition_display }}
+                </td>
+                <td>{{ hc.date_diagnosed|date:"Y-m-d"|default:"—" }}</td>
+                <td class="text-muted small">{{ hc.notes|default:"—"|truncatechars:60 }}</td>
+                <td class="text-center">
+                  {% if hc.is_active %}
+                    <span class="badge bg-success">Active</span>
+                  {% else %}
+                    <span class="badge bg-secondary">Resolved</span>
+                  {% endif %}
+                </td>
+                <td class="small text-muted">{{ hc.recorded_by.get_full_name|default:hc.recorded_by.username|default:"—" }}</td>
+                <td>
+                  <div class="d-flex gap-1">
+                    <button class="btn btn-xs btn-outline-secondary btn-sm"
+                            data-bs-toggle="modal"
+                            data-bs-target="#editHealthModal{{ hc.pk }}">
+                      <i class="bi bi-pencil"></i>
+                    </button>
+                    <form method="post" action="{% url 'pdl:health_condition_delete' hc.pk %}" class="d-inline"
+                          onsubmit="return confirm('Remove this health condition?')">
+                      {% csrf_token %}
+                      <button type="submit" class="btn btn-xs btn-outline-danger btn-sm">
+                        <i class="bi bi-trash"></i>
+                      </button>
+                    </form>
+                  </div>
+                </td>
+              </tr>
+
+              <!-- Edit modal per condition -->
+              <div class="modal fade" id="editHealthModal{{ hc.pk }}" tabindex="-1" aria-hidden="true">
+                <div class="modal-dialog">
+                  <div class="modal-content">
+                    <form method="post" action="{% url 'pdl:health_condition_edit' hc.pk %}">
+                      {% csrf_token %}
+                      <div class="modal-header">
+                        <h5 class="modal-title">Edit Health Condition</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                      </div>
+                      <div class="modal-body p-4">
+                        <div class="mb-3">
+                          <label class="form-label fw-semibold">Condition</label>
+                          <select name="condition" class="form-select" required>
+                            {% for code, label in condition_choices %}
+                              <option value="{{ code }}" {% if hc.condition == code %}selected{% endif %}>{{ label }}</option>
+                            {% endfor %}
+                          </select>
+                        </div>
+                        <div class="mb-3">
+                          <label class="form-label fw-semibold">Date Diagnosed</label>
+                          <input type="date" name="date_diagnosed" class="form-control"
+                                 value="{{ hc.date_diagnosed|date:'Y-m-d' }}">
+                        </div>
+                        <div class="mb-3">
+                          <label class="form-label fw-semibold">Notes</label>
+                          <textarea name="notes" class="form-control" rows="3">{{ hc.notes }}</textarea>
+                        </div>
+                        <div class="form-check">
+                          <input class="form-check-input" type="checkbox" name="is_active" id="isActive{{ hc.pk }}"
+                                 {% if hc.is_active %}checked{% endif %}>
+                          <label class="form-check-label" for="isActive{{ hc.pk }}">Currently Active</label>
+                        </div>
+                      </div>
+                      <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                        <button type="submit" class="btn btn-primary">Save Changes</button>
+                      </div>
+                    </form>
+                  </div>
+                </div>
+              </div>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+      {% else %}
+        <p class="text-muted fst-italic mb-0">No health conditions recorded for this PDL.</p>
+      {% endif %}
+    </div>
+  </div>
+</div>
+
+<!-- Add Health Condition Modal -->
+<div class="modal fade" id="addHealthConditionModal" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <form method="post" action="{% url 'pdl:health_condition_add' pdl.id %}">
+        {% csrf_token %}
+        <div class="modal-header">
+          <h5 class="modal-title"><i class="bi bi-heart-pulse me-2"></i>Add Health Condition</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+        </div>
+        <div class="modal-body p-4">
+          <div class="mb-3">
+            <label class="form-label fw-semibold">Condition <span class="text-danger">*</span></label>
+            <select name="condition" class="form-select" required>
+              <option value="">— Select condition —</option>
+              {% for code, label in condition_choices %}
+                <option value="{{ code }}">{{ label }}</option>
+              {% endfor %}
+            </select>
+          </div>
+          <div class="mb-3">
+            <label class="form-label fw-semibold">Date Diagnosed</label>
+            <input type="date" name="date_diagnosed" class="form-control">
+          </div>
+          <div class="mb-3">
+            <label class="form-label fw-semibold">Notes</label>
+            <textarea name="notes" class="form-control" rows="3" placeholder="Additional details…"></textarea>
+          </div>
+          <div class="form-check">
+            <input class="form-check-input" type="checkbox" name="is_active" id="newIsActive" checked>
+            <label class="form-check-label" for="newIsActive">Currently Active</label>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+          <button type="submit" class="btn btn-danger">
+            <i class="bi bi-plus-circle me-1"></i>Add Condition
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+</div>
+{% endblock %}

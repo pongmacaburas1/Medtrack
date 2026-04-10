@@ -1,0 +1,473 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Dashboard — MedTrack{% endblock %}
+
+{% block extra_css %}
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600;700&family=Playfair+Display:wght@700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --em: #10b981;
+    --em-dim: rgba(16,185,129,.12);
+    --em-border: rgba(16,185,129,.28);
+    --card-radius: 1rem;
+  }
+
+  /* ── PAGE SHELL ───────────────────────────────── */
+  .dash-page {
+    min-height: calc(100vh - 60px);
+    padding: 2rem 1.5rem 4rem;
+    font-family: 'DM Sans', sans-serif;
+  }
+
+  /* ── HEADER BANNER ────────────────────────────── */
+  .dash-header {
+    border-radius: var(--card-radius);
+    padding: 2rem 2.25rem;
+    margin-bottom: 1.75rem;
+    position: relative; overflow: hidden;
+    background: linear-gradient(135deg, #0b1d3a 0%, #122347 100%);
+    border: 1px solid rgba(255,255,255,.07);
+    animation: fadeUp .5s ease both;
+  }
+  .dash-header::before {
+    content: "";
+    position: absolute; inset: 0;
+    background-image:
+      linear-gradient(rgba(16,185,129,.06) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(16,185,129,.06) 1px, transparent 1px);
+    background-size: 40px 40px;
+  }
+  .dash-header-inner { position: relative; z-index: 1; }
+  .dash-greeting {
+    font-size: .8rem; font-weight: 600; letter-spacing: .1em;
+    color: var(--em); text-transform: uppercase; margin-bottom: .35rem;
+  }
+  .dash-title {
+    font-family: 'Playfair Display', serif;
+    font-size: clamp(1.5rem, 3vw, 2rem);
+    color: #fff; margin-bottom: .25rem;
+  }
+  .dash-subtitle { font-size: .88rem; color: rgba(255,255,255,.45); }
+
+  /* role badge */
+  .dash-role-badge {
+    display: inline-flex; align-items: center; gap: .4rem;
+    background: var(--em-dim); border: 1px solid var(--em-border);
+    color: var(--em); font-size: .72rem; font-weight: 700;
+    letter-spacing: .08em; padding: .3rem .8rem; border-radius: 2rem;
+    margin-top: .75rem;
+  }
+
+  /* ── SECTION LABEL ────────────────────────────── */
+  .section-label {
+    font-size: .72rem; font-weight: 700; letter-spacing: .12em;
+    color: var(--em); text-transform: uppercase; margin-bottom: .85rem;
+  }
+
+  /* ── INFO CARD ────────────────────────────────── */
+  .info-card {
+    border-radius: var(--card-radius);
+    padding: 1.75rem;
+    height: 100%;
+    border: 1px solid rgba(255,255,255,.07);
+    animation: fadeUp .5s ease both;
+  }
+  [data-bs-theme="dark"]  .info-card { background: rgba(255,255,255,.03); }
+  [data-bs-theme="light"] .info-card { background: #fff; border-color: rgba(0,0,0,.07); box-shadow: 0 2px 16px rgba(0,0,0,.06); }
+
+  /* ── PROFILE ROWS ─────────────────────────────── */
+  .profile-row {
+    display: flex; align-items: flex-start; gap: .85rem;
+    padding: .85rem 0;
+    border-bottom: 1px solid rgba(255,255,255,.06);
+  }
+  [data-bs-theme="light"] .profile-row { border-bottom-color: rgba(0,0,0,.06); }
+  .profile-row:last-child { border-bottom: none; }
+  .profile-icon {
+    width: 34px; height: 34px; border-radius: .5rem; flex-shrink: 0;
+    display: flex; align-items: center; justify-content: center;
+    background: var(--em-dim); border: 1px solid var(--em-border);
+    color: var(--em); font-size: .9rem;
+  }
+  .profile-label { font-size: .72rem; font-weight: 600; letter-spacing: .05em; opacity: .45; text-transform: uppercase; }
+  .profile-value { font-size: .92rem; font-weight: 500; margin-top: .1rem; }
+
+  /* admin notice */
+  .admin-notice {
+    border-radius: .75rem; padding: 1.25rem 1.5rem;
+    display: flex; align-items: center; gap: 1rem;
+    background: var(--em-dim); border: 1px solid var(--em-border);
+    margin-bottom: 1.5rem;
+    animation: fadeUp .5s ease both;
+  }
+  .admin-notice-icon { font-size: 1.75rem; color: var(--em); flex-shrink: 0; }
+  .admin-notice h6 { font-weight: 700; color: var(--em); margin-bottom: .2rem; font-size: .9rem; }
+  .admin-notice p  { font-size: .82rem; opacity: .65; margin: 0; }
+
+  /* ── QUICK LINKS ──────────────────────────────── */
+  .quick-link {
+    display: flex; align-items: center; gap: .85rem;
+    padding: .9rem 1rem; border-radius: .75rem;
+    text-decoration: none;
+    border: 1px solid rgba(255,255,255,.07);
+    margin-bottom: .6rem;
+    transition: background .18s, border-color .18s, transform .18s;
+  }
+  [data-bs-theme="dark"]  .quick-link { color: rgba(255,255,255,.75); background: rgba(255,255,255,.03); }
+  [data-bs-theme="light"] .quick-link { color: #1e293b; background: #f8fafc; border-color: rgba(0,0,0,.07); }
+  .quick-link:hover {
+    background: var(--em-dim); border-color: var(--em-border);
+    color: var(--em); transform: translateX(4px);
+  }
+  .quick-link-icon {
+    width: 34px; height: 34px; border-radius: .5rem; flex-shrink: 0;
+    display: flex; align-items: center; justify-content: center;
+    background: var(--em-dim); border: 1px solid var(--em-border);
+    color: var(--em); font-size: .95rem;
+    transition: background .18s;
+  }
+  .quick-link:hover .quick-link-icon { background: rgba(16,185,129,.25); }
+  .quick-link-text { font-size: .88rem; font-weight: 500; }
+  .quick-link-arrow { margin-left: auto; opacity: .35; font-size: .8rem; }
+
+  /* ── CONSULTATION ITEMS ───────────────────────── */
+  .consult-item {
+    display: flex; align-items: flex-start; gap: 1rem;
+    padding: 1rem; border-radius: .75rem;
+    border: 1px solid rgba(255,255,255,.07);
+    margin-bottom: .65rem;
+    transition: border-color .18s, background .18s;
+    animation: fadeUp .5s ease both;
+  }
+  [data-bs-theme="dark"]  .consult-item { background: rgba(255,255,255,.02); }
+  [data-bs-theme="light"] .consult-item { background: #f8fafc; border-color: rgba(0,0,0,.07); }
+  .consult-item:hover { border-color: var(--em-border); background: var(--em-dim); }
+  .consult-dot {
+    width: 38px; height: 38px; border-radius: .6rem; flex-shrink: 0;
+    display: flex; align-items: center; justify-content: center;
+    background: var(--em-dim); border: 1px solid var(--em-border);
+    color: var(--em); font-size: 1rem;
+  }
+  .consult-date { font-weight: 700; font-size: .9rem; }
+  .consult-time { font-size: .78rem; opacity: .55; margin-top: .1rem; }
+  .consult-pdl  { font-size: .82rem; margin-top: .3rem; }
+  .status-chip {
+    display: inline-block; font-size: .65rem; font-weight: 700;
+    letter-spacing: .06em; padding: .2rem .55rem; border-radius: 1rem;
+    background: var(--em-dim); border: 1px solid var(--em-border); color: var(--em);
+    text-transform: uppercase;
+  }
+
+  .empty-state {
+    text-align: center; padding: 2.5rem 1rem; opacity: .45;
+  }
+  .empty-state i   { font-size: 2rem; display: block; margin-bottom: .75rem; }
+  .empty-state span { font-size: .88rem; }
+
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(16px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+  .delay-1 { animation-delay: .08s; }
+  .delay-2 { animation-delay: .16s; }
+  .delay-3 { animation-delay: .24s; }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="dash-page">
+<div class="container-xl">
+
+  <!-- ── HEADER ── -->
+  <div class="dash-header mb-4">
+    <div class="dash-header-inner d-flex align-items-center justify-content-between flex-wrap gap-3">
+      <div>
+        <div class="dash-greeting">
+          <i class="bi bi-grid me-1"></i> MedTrack · San Jose District Jail
+        </div>
+        <h1 class="dash-title">
+          {% if physician %}
+            {{ physician.username.first_name }} {{ physician.username.last_name }}
+          {% else %}
+            Welcome, {{ request.user.get_full_name|default:request.user.username }}
+          {% endif %}
+        </h1>
+        <div class="dash-role-badge">
+          {% if physician %}
+            <i class="bi bi-heart-pulse"></i> PHYSICIAN
+          {% elif request.user.is_superuser %}
+            <i class="bi bi-shield-fill-check"></i> ADMIN
+          {% else %}
+            <i class="bi bi-person-badge"></i> USER
+          {% endif %}
+        </div>
+      </div>
+      <div style="text-align:right;">
+        <div style="font-size:.75rem;opacity:.4;margin-bottom:.2rem;">Today</div>
+        <div style="font-size:1.1rem;font-weight:700;color:#fff;" id="dashDate"></div>
+        <div style="font-size:.8rem;opacity:.4;" id="dashTime"></div>
+      </div>
+    </div>
+  </div>
+
+  {% if not physician %}
+  <!-- Admin / Staff notice -->
+  <div class="admin-notice delay-1">
+    <div class="admin-notice-icon"><i class="bi bi-info-circle"></i></div>
+    <div>
+      <h6>Administrator View</h6>
+      <p>Your account is not linked to a physician profile. Showing all upcoming consultations across the facility.</p>
+    </div>
+  </div>
+  {% endif %}
+
+  <div class="row g-4">
+
+    <!-- ── LEFT: PROFILE / ADMIN INFO ── -->
+    <div class="col-lg-4">
+      <div class="info-card delay-1">
+
+        {% if physician %}
+          <div class="section-label"><i class="bi bi-person me-1"></i>Physician Profile</div>
+
+          <div class="profile-row">
+            <div class="profile-icon"><i class="bi bi-person"></i></div>
+            <div>
+              <div class="profile-label">Full Name</div>
+              <div class="profile-value">{{ physician.username.first_name }} {{ physician.username.last_name }}</div>
+            </div>
+          </div>
+
+          <div class="profile-row">
+            <div class="profile-icon"><i class="bi bi-envelope"></i></div>
+            <div>
+              <div class="profile-label">Email</div>
+              <div class="profile-value">{{ physician.username.email|default:"—" }}</div>
+            </div>
+          </div>
+
+          <div class="profile-row">
+            <div class="profile-icon"><i class="bi bi-telephone"></i></div>
+            <div>
+              <div class="profile-label">Phone</div>
+              <div class="profile-value">{{ physician.phone_number|default:"—" }}</div>
+            </div>
+          </div>
+
+          <div class="profile-row">
+            <div class="profile-icon"><i class="bi bi-briefcase"></i></div>
+            <div>
+              <div class="profile-label">Specialty</div>
+              <div class="profile-value">{{ physician.specialty.name|default:"—" }}</div>
+            </div>
+          </div>
+
+          <div class="profile-row">
+            <div class="profile-icon"><i class="bi bi-geo-alt"></i></div>
+            <div>
+              <div class="profile-label">Address</div>
+              <div class="profile-value">{{ physician.address|default:"—" }}</div>
+            </div>
+          </div>
+
+        {% else %}
+          <!-- Non-physician: show account info -->
+          <div class="section-label"><i class="bi bi-person-badge me-1"></i>Account Info</div>
+
+          <div class="profile-row">
+            <div class="profile-icon"><i class="bi bi-person"></i></div>
+            <div>
+              <div class="profile-label">Name</div>
+              <div class="profile-value">{{ request.user.get_full_name|default:request.user.username }}</div>
+            </div>
+          </div>
+
+          <div class="profile-row">
+            <div class="profile-icon"><i class="bi bi-envelope"></i></div>
+            <div>
+              <div class="profile-label">Email</div>
+              <div class="profile-value">{{ request.user.email|default:"—" }}</div>
+            </div>
+          </div>
+
+          <div class="profile-row">
+            <div class="profile-icon"><i class="bi bi-shield-check"></i></div>
+            <div>
+              <div class="profile-label">Role</div>
+              <div class="profile-value">
+                {% if request.user.is_superuser %}Administrator
+                {% else %}User{% endif %}
+              </div>
+            </div>
+          </div>
+
+        {% endif %}
+
+      </div>
+    </div>
+
+    <!-- ── RIGHT: QUICK LINKS + CONSULTATIONS ── -->
+    <div class="col-lg-8">
+      <div class="row g-4">
+
+        <!-- Quick Links -->
+        <div class="col-12">
+          <div class="info-card delay-2">
+            <div class="section-label"><i class="bi bi-lightning me-1"></i>Quick Links</div>
+
+            <!-- Calendar link — physician vs all -->
+            {% if physician %}
+              <a href="{% url 'consultations:consultation_calendar_physician' physician.id %}" class="quick-link">
+                <div class="quick-link-icon"><i class="bi bi-calendar-event"></i></div>
+                <span class="quick-link-text">My Consultation Calendar</span>
+                <i class="bi bi-chevron-right quick-link-arrow"></i>
+              </a>
+            {% else %}
+              <a href="{% url 'consultations:consultation_calendar' %}" class="quick-link">
+                <div class="quick-link-icon"><i class="bi bi-calendar3"></i></div>
+                <span class="quick-link-text">View All Consultations</span>
+                <i class="bi bi-chevron-right quick-link-arrow"></i>
+              </a>
+            {% endif %}
+
+            <a href="{% url 'medications:medication_list' %}" class="quick-link">
+              <div class="quick-link-icon"><i class="bi bi-capsule"></i></div>
+              <span class="quick-link-text">Medication List</span>
+              <i class="bi bi-chevron-right quick-link-arrow"></i>
+            </a>
+
+            <a href="{% url 'medications:inventory_list' %}" class="quick-link">
+              <div class="quick-link-icon"><i class="bi bi-box-seam"></i></div>
+              <span class="quick-link-text">Inventory Management</span>
+              <i class="bi bi-chevron-right quick-link-arrow"></i>
+            </a>
+
+            <a href="{% url 'medications:medication_add' %}" class="quick-link">
+              <div class="quick-link-icon"><i class="bi bi-plus-circle"></i></div>
+              <span class="quick-link-text">Add New Medicine</span>
+              <i class="bi bi-chevron-right quick-link-arrow"></i>
+            </a>
+
+            <a href="{% url 'medications:prescription_create' %}" class="quick-link">
+              <div class="quick-link-icon"><i class="bi bi-file-earmark-medical"></i></div>
+              <span class="quick-link-text">Create Prescription</span>
+              <i class="bi bi-chevron-right quick-link-arrow"></i>
+            </a>
+
+            <a href="{% url 'pdl:add_pdl' %}" class="quick-link">
+              <div class="quick-link-icon"><i class="bi bi-person-plus"></i></div>
+              <span class="quick-link-text">Add New PDL</span>
+              <i class="bi bi-chevron-right quick-link-arrow"></i>
+            </a>
+
+            <a href="{% url 'pdl:pdl_list' %}" class="quick-link">
+              <div class="quick-link-icon"><i class="bi bi-people"></i></div>
+              <span class="quick-link-text">PDL List</span>
+              <i class="bi bi-chevron-right quick-link-arrow"></i>
+            </a>
+
+            <a href="{% url 'reports:report_center' %}" class="quick-link">
+              <div class="quick-link-icon"><i class="bi bi-bar-chart"></i></div>
+              <span class="quick-link-text">Reports</span>
+              <i class="bi bi-chevron-right quick-link-arrow"></i>
+            </a>
+
+          </div>
+        </div>
+
+        <!-- Follow-up Consultations Due -->
+        <!-- DEBUG: followup_count = {{ followup_count }} -->
+        {% if followup_count > 0 %}
+        <div class="col-12">
+          <div class="info-card delay-2" style="background: rgba(245,158,11,.15); border: 2px solid #f59e0b;">
+            <div class="section-label" style="color: #f59e0b;">
+              <i class="bi bi-bell-fill me-1"></i>Follow-up Consultations Due ({{ followup_count }})
+            </div>
+
+            {% for fu in followup_due %}
+            <div class="consult-item" style="border-color: rgba(245,158,11,.2); background: rgba(245,158,11,.05);">
+              <div class="consult-dot" style="background: rgba(245,158,11,.15); border-color: rgba(245,158,11,.3); color: #f59e0b;">
+                <i class="bi bi-arrow-repeat"></i>
+              </div>
+              <div style="flex:1; min-width:0;">
+                <div class="d-flex align-items-center justify-content-between flex-wrap gap-2">
+                  <span class="consult-date">{{ fu.consultation_date_date_only }}</span>
+                  <span class="status-chip" style="background: rgba(245,158,11,.15); border-color: rgba(245,158,11,.3); color: #f59e0b;">FOLLOW-UP</span>
+                </div>
+                <div class="consult-time">{{ fu.consultation_time_block_display }}</div>
+                <div class="consult-pdl">
+                  <i class="bi bi-person me-1" style="opacity:.5;"></i>{{ fu.pdl_profile }}
+                  {% if not physician %}
+                    · <span style="opacity:.5;">{{ fu.physician }}</span>
+                  {% endif %}
+                </div>
+                {% if fu.parent_consultation %}
+                <div style="font-size:.75rem; opacity:.5; margin-top:.3rem;">
+                  <i class="bi bi-link-45deg"></i> Follow-up for: {{ fu.parent_consultation.consultation_date_date_only }}
+                </div>
+                {% endif %}
+              </div>
+            </div>
+            {% endfor %}
+
+          </div>
+        </div>
+        {% endif %}
+
+        <!-- Upcoming Consultations -->
+        <div class="col-12">
+          <div class="info-card delay-3">
+            <div class="section-label"><i class="bi bi-clock-history me-1"></i>Upcoming Consultations</div>
+
+            {% if upcoming_consultations %}
+              {% for c in upcoming_consultations %}
+              <div class="consult-item">
+                <div class="consult-dot"><i class="bi bi-calendar-check"></i></div>
+                <div style="flex:1; min-width:0;">
+                  <div class="d-flex align-items-center justify-content-between flex-wrap gap-2">
+                    <span class="consult-date">{{ c.consultation_date_date_only }}</span>
+                    <span class="status-chip">{{ c.status }}</span>
+                  </div>
+                  <div class="consult-time">{{ c.consultation_time_block_display }}</div>
+                  <div class="consult-pdl">
+                    <i class="bi bi-person me-1" style="opacity:.5;"></i>{{ c.pdl_profile }}
+                    {% if not physician %}
+                      · <span style="opacity:.5;">{{ c.physician }}</span>
+                    {% endif %}
+                  </div>
+                </div>
+              </div>
+              {% endfor %}
+            {% else %}
+              <div class="empty-state">
+                <i class="bi bi-calendar-x"></i>
+                <span>No upcoming consultations scheduled.</span>
+              </div>
+            {% endif %}
+
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+  </div>
+</div>
+</div>
+
+<script>
+  (function () {
+    const dateEl = document.getElementById('dashDate');
+    const timeEl = document.getElementById('dashTime');
+    function tick() {
+      const now = new Date();
+      dateEl.textContent = now.toLocaleDateString('en-PH', { weekday:'short', year:'numeric', month:'short', day:'numeric' });
+      timeEl.textContent = now.toLocaleTimeString('en-PH', { hour:'2-digit', minute:'2-digit' });
+    }
+    tick();
+    setInterval(tick, 1000);
+  })();
+</script>
+{% endblock %}

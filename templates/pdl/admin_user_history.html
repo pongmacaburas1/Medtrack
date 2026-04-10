@@ -1,0 +1,319 @@
+{% extends "base.html" %}
+{% block title %}User History — {{ target_user.get_full_name|default:target_user.username }} — MedTrack{% endblock %}
+
+{% block content %}
+<style>
+  .hist-wrap   { padding: 2rem 1.5rem; max-width: 1100px; margin: 0 auto; }
+
+  /* ── HEADER ─────────────────────────────────────── */
+  .hist-header { display:flex; align-items:flex-start; justify-content:space-between; flex-wrap:wrap; gap:1rem; margin-bottom:1.75rem; }
+  .hist-avatar {
+    width: 54px; height: 54px; border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 1.4rem; font-weight: 700;
+    background: var(--emerald-dim); color: var(--emerald);
+    border: 2px solid var(--emerald-border); flex-shrink: 0;
+  }
+  .hist-name   { font-size: 1.35rem; font-weight: 700; margin: 0; }
+  .hist-meta   { font-size: .8rem; opacity: .5; margin-top: .2rem; }
+
+  /* ── ROLE PILLS (reuse from admin_dashboard) ──── */
+  .role-pill { display:inline-flex; align-items:center; gap:.3rem; font-size:.72rem; font-weight:700; padding:.25rem .65rem; border-radius:50px; letter-spacing:.03em; text-transform:uppercase; }
+  .rp-admin      { background:rgba(244,63,94,.12);  color:#f43f5e; border:1px solid rgba(244,63,94,.2); }
+  .rp-doctor     { background:rgba(16,185,129,.12); color:#10b981; border:1px solid rgba(16,185,129,.2); }
+  .rp-pharmacist { background:rgba(168,85,247,.12); color:#a855f7; border:1px solid rgba(168,85,247,.2); }
+  .rp-superuser  { background:rgba(245,158,11,.12); color:#f59e0b; border:1px solid rgba(245,158,11,.2); }
+
+  /* ── STAT CARDS ─────────────────────────────────── */
+  .sum-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(150px,1fr)); gap:.85rem; margin-bottom:1.75rem; }
+  .sum-card {
+    border-radius:12px; padding:.9rem 1rem;
+    display:flex; flex-direction:column; gap:.25rem;
+    border:1px solid transparent;
+  }
+  [data-bs-theme="dark"]  .sum-card { background:rgba(255,255,255,.04); border-color:rgba(255,255,255,.07); }
+  [data-bs-theme="light"] .sum-card { background:#fff; border-color:#e9ecef; box-shadow:0 2px 8px rgba(0,0,0,.05); }
+  .sum-val { font-size:1.5rem; font-weight:700; }
+  .sum-lbl { font-size:.72rem; opacity:.5; text-transform:uppercase; letter-spacing:.04em; font-weight:600; }
+
+  /* ── SECTION CARD ───────────────────────────────── */
+  .sec-card { border-radius:14px; overflow:hidden; margin-bottom:1.25rem; }
+  [data-bs-theme="dark"]  .sec-card { background:rgba(255,255,255,.04); border:1px solid rgba(255,255,255,.07); }
+  [data-bs-theme="light"] .sec-card { background:#fff; border:1px solid #e9ecef; box-shadow:0 2px 10px rgba(0,0,0,.04); }
+
+  .sec-head {
+    display:flex; align-items:center; justify-content:space-between;
+    padding:.85rem 1.1rem; border-bottom:1px solid rgba(128,128,128,.1); cursor:pointer;
+  }
+  .sec-head-title { font-size:.92rem; font-weight:700; margin:0; display:flex; align-items:center; gap:.5rem; }
+  .sec-head .badge { font-size:.72rem; font-weight:600; }
+  .sec-body { padding:0; }
+
+  /* ── INNER TABLE ────────────────────────────────── */
+  .h-table { width:100%; border-collapse:collapse; font-size:.84rem; }
+  .h-table thead th { padding:.55rem 1rem; font-size:.7rem; text-transform:uppercase; letter-spacing:.06em; font-weight:600; opacity:.45; }
+  .h-table tbody tr { border-top:1px solid rgba(128,128,128,.07); transition:background .12s; }
+  [data-bs-theme="dark"]  .h-table tbody tr:hover { background:rgba(255,255,255,.025); }
+  [data-bs-theme="light"] .h-table tbody tr:hover { background:#f8f9fa; }
+  .h-table tbody td { padding:.7rem 1rem; vertical-align:middle; }
+
+  /* ── TYPE BADGES ────────────────────────────────── */
+  .type-badge { display:inline-block; font-size:.7rem; font-weight:700; padding:.2rem .55rem; border-radius:6px; text-transform:uppercase; letter-spacing:.03em; }
+  .tb-addition   { background:rgba(16,185,129,.12); color:#10b981; }
+  .tb-dispensation { background:rgba(168,85,247,.12); color:#a855f7; }
+  .tb-adjustment { background:rgba(245,158,11,.12); color:#f59e0b; }
+  .tb-return     { background:rgba(59,130,246,.12); color:#3b82f6; }
+  .tb-expired    { background:rgba(244,63,94,.12); color:#f43f5e; }
+  .tb-completed  { background:rgba(16,185,129,.12); color:#10b981; }
+  .tb-scheduled  { background:rgba(59,130,246,.12); color:#3b82f6; }
+  .tb-canceled   { background:rgba(244,63,94,.12); color:#f43f5e; }
+  .tb-dispensed  { background:rgba(168,85,247,.12); color:#a855f7; }
+  .tb-ongoing    { background:rgba(245,158,11,.12); color:#f59e0b; }
+
+  /* ── EMPTY ──────────────────────────────────────── */
+  .empty-row td { text-align:center; padding:1.75rem; opacity:.4; font-size:.85rem; }
+
+  /* ── COLLAPSE CHEVRON ───────────────────────────── */
+  .chev { transition:transform .2s; }
+  .collapsed .chev { transform:rotate(-90deg); }
+</style>
+
+<div class="hist-wrap">
+
+  <!-- ── BACK + HEADER ──────────────────────────────── -->
+  <div class="hist-header">
+    <div class="d-flex align-items-center gap-3">
+      <div class="hist-avatar">{{ target_user.get_full_name|default:target_user.username|slice:":1"|upper }}</div>
+      <div>
+        <h1 class="hist-name">
+          {{ target_user.get_full_name|default:target_user.username }}
+          {% if target_user.is_superuser %}<i class="bi bi-patch-check-fill text-warning ms-1" style="font-size:.9rem;" title="Superuser"></i>{% endif %}
+        </h1>
+        <div class="hist-meta">
+          @{{ target_user.username }}
+          {% if target_user.email %} · {{ target_user.email }}{% endif %}
+          · Joined {{ target_user.date_joined|date:"M d, Y" }}
+        </div>
+        <div class="mt-1">
+          {% if target_user.is_superuser %}
+            <span class="role-pill rp-superuser"><i class="bi bi-star-fill"></i> Superuser</span>
+          {% elif target_user.userprofile.role == 'admin' %}
+            <span class="role-pill rp-admin"><i class="bi bi-shield-fill"></i> Admin</span>
+          {% elif target_user.userprofile.role == 'doctor' %}
+            <span class="role-pill rp-doctor"><i class="bi bi-heart-pulse"></i> Doctor</span>
+          {% elif target_user.userprofile.role == 'pharmacist' %}
+            <span class="role-pill rp-pharmacist"><i class="bi bi-capsule"></i> Pharmacist</span>
+          {% else %}
+            <span class="role-pill rp-doctor"><i class="bi bi-person-badge"></i> User</span>
+          {% endif %}
+          {% if physician %}<span class="role-pill rp-doctor ms-1"><i class="bi bi-stethoscope"></i> {{ physician.specialty }}</span>{% endif %}
+          {% if pharmacist %}<span class="role-pill rp-pharmacist ms-1"><i class="bi bi-capsule-pill"></i> Pharmacist</span>{% endif %}
+        </div>
+      </div>
+    </div>
+    <div class="d-flex gap-2">
+      <a href="?export=excel" class="btn btn-sm btn-outline-success">
+        <i class="bi bi-file-earmark-excel me-1"></i> Export to Excel
+      </a>
+      <a href="{% url 'pdl:admin_dashboard' %}" class="btn btn-sm btn-outline-secondary">
+        <i class="bi bi-arrow-left me-1"></i> Back to Admin Panel
+      </a>
+    </div>
+  </div>
+
+  <!-- ── SUMMARY STATS ────────────────────────────── -->
+  <div class="sum-grid">
+    <div class="sum-card">
+      <div class="sum-val" style="color:var(--emerald);">{{ summary.consultations }}</div>
+      <div class="sum-lbl">Consultations</div>
+    </div>
+    <div class="sum-card">
+      <div class="sum-val" style="color:#10b981;">{{ summary.prescriptions_written }}</div>
+      <div class="sum-lbl">Rx Written</div>
+    </div>
+    <div class="sum-card">
+      <div class="sum-val" style="color:#a855f7;">{{ summary.prescriptions_dispensed }}</div>
+      <div class="sum-lbl">Rx Dispensed</div>
+    </div>
+    <div class="sum-card">
+      <div class="sum-val" style="color:#f59e0b;">{{ summary.inventory_transactions }}</div>
+      <div class="sum-lbl">Inventory Txns</div>
+    </div>
+    <div class="sum-card">
+      <div class="sum-val" style="color:#3b82f6;">{{ summary.health_conditions }}</div>
+      <div class="sum-lbl">Conditions Recorded</div>
+    </div>
+  </div>
+
+  <!-- ── CONSULTATIONS ─────────────────────────────── -->
+  <div class="sec-card">
+    <div class="sec-head" data-bs-toggle="collapse" data-bs-target="#secConsult">
+      <h2 class="sec-head-title">
+        <i class="bi bi-calendar3-event opacity-50"></i> Consultations Conducted
+        <span class="badge bg-secondary-subtle text-secondary fw-normal">{{ summary.consultations }}</span>
+      </h2>
+      <i class="bi bi-chevron-down chev"></i>
+    </div>
+    <div class="collapse show sec-body" id="secConsult">
+      <table class="h-table">
+        <thead><tr><th>Date</th><th>PDL</th><th>Reason</th><th>Location</th><th>Status</th></tr></thead>
+        <tbody>
+          {% for c in consultations %}
+          <tr>
+            <td style="white-space:nowrap;">{{ c.consultation_date_date_only|date:"M d, Y" }}</td>
+            <td><a href="{% url 'pdl:pdl_profile' c.pdl_profile.username.username %}" class="text-decoration-none fw-semibold">{{ c.pdl_profile }}</a></td>
+            <td>{{ c.reason }}</td>
+            <td>{{ c.location|default:"—" }}</td>
+            <td>
+              <span class="type-badge tb-{{ c.status }}">{{ c.get_status_display }}</span>
+            </td>
+          </tr>
+          {% empty %}
+          <tr class="empty-row"><td colspan="5"><i class="bi bi-calendar-x me-1"></i>No consultations recorded</td></tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- ── PRESCRIPTIONS WRITTEN ─────────────────────── -->
+  <div class="sec-card">
+    <div class="sec-head" data-bs-toggle="collapse" data-bs-target="#secRxWritten">
+      <h2 class="sec-head-title">
+        <i class="bi bi-file-medical opacity-50"></i> Prescriptions Written
+        <span class="badge bg-secondary-subtle text-secondary fw-normal">{{ summary.prescriptions_written }}</span>
+      </h2>
+      <i class="bi bi-chevron-down chev"></i>
+    </div>
+    <div class="collapse show sec-body" id="secRxWritten">
+      <table class="h-table">
+        <thead><tr><th>Date</th><th>PDL</th><th>Medication</th><th>Dosage</th><th>Qty</th><th>Status</th></tr></thead>
+        <tbody>
+          {% for rx in prescriptions_written %}
+          <tr>
+            <td style="white-space:nowrap;">{{ rx.created_at|date:"M d, Y" }}</td>
+            <td><a href="{% url 'pdl:pdl_profile' rx.pdl_profile.username.username %}" class="text-decoration-none fw-semibold">{{ rx.pdl_profile }}</a></td>
+            <td>{{ rx.medication.name }}</td>
+            <td>{{ rx.dosage }} · {{ rx.frequency }}</td>
+            <td>{{ rx.quantity_prescribed }}</td>
+            <td><span class="type-badge tb-{{ rx.status }}">{{ rx.get_status_display }}</span></td>
+          </tr>
+          {% empty %}
+          <tr class="empty-row"><td colspan="6"><i class="bi bi-file-x me-1"></i>No prescriptions written</td></tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- ── PRESCRIPTIONS DISPENSED ───────────────────── -->
+  <div class="sec-card">
+    <div class="sec-head" data-bs-toggle="collapse" data-bs-target="#secRxDispensed">
+      <h2 class="sec-head-title">
+        <i class="bi bi-capsule opacity-50"></i> Prescriptions Dispensed
+        <span class="badge bg-secondary-subtle text-secondary fw-normal">{{ summary.prescriptions_dispensed }}</span>
+      </h2>
+      <i class="bi bi-chevron-down chev"></i>
+    </div>
+    <div class="collapse show sec-body" id="secRxDispensed">
+      <table class="h-table">
+        <thead><tr><th>Dispensed At</th><th>PDL</th><th>Medication</th><th>Qty Dispensed</th><th>Status</th></tr></thead>
+        <tbody>
+          {% for rx in prescriptions_dispensed %}
+          <tr>
+            <td style="white-space:nowrap;">{{ rx.dispensed_at|date:"M d, Y · H:i"|default:"—" }}</td>
+            <td><a href="{% url 'pdl:pdl_profile' rx.pdl_profile.username.username %}" class="text-decoration-none fw-semibold">{{ rx.pdl_profile }}</a></td>
+            <td>{{ rx.medication.name }}</td>
+            <td>{{ rx.quantity_dispensed }}</td>
+            <td><span class="type-badge tb-{{ rx.status }}">{{ rx.get_status_display }}</span></td>
+          </tr>
+          {% empty %}
+          <tr class="empty-row"><td colspan="5"><i class="bi bi-capsule me-1"></i>No prescriptions dispensed</td></tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- ── INVENTORY TRANSACTIONS ────────────────────── -->
+  <div class="sec-card">
+    <div class="sec-head" data-bs-toggle="collapse" data-bs-target="#secInv">
+      <h2 class="sec-head-title">
+        <i class="bi bi-box-seam opacity-50"></i> Inventory Transactions
+        <span class="badge bg-secondary-subtle text-secondary fw-normal">{{ summary.inventory_transactions }}</span>
+      </h2>
+      <i class="bi bi-chevron-down chev"></i>
+    </div>
+    <div class="collapse show sec-body" id="secInv">
+      <table class="h-table">
+        <thead><tr><th>Timestamp</th><th>Medication</th><th>Type</th><th>Qty Change</th><th>Notes</th></tr></thead>
+        <tbody>
+          {% for txn in inventory_transactions %}
+          <tr>
+            <td style="white-space:nowrap;">{{ txn.timestamp|date:"M d, Y · H:i" }}</td>
+            <td>{{ txn.inventory.medication.name }}</td>
+            <td><span class="type-badge tb-{{ txn.transaction_type }}">{{ txn.get_transaction_type_display }}</span></td>
+            <td>
+              {% if txn.quantity_change > 0 %}
+                <span style="color:#10b981;">+{{ txn.quantity_change }}</span>
+              {% else %}
+                <span style="color:#f43f5e;">{{ txn.quantity_change }}</span>
+              {% endif %}
+            </td>
+            <td style="opacity:.6; font-size:.8rem;">{{ txn.notes|default:"—" }}</td>
+          </tr>
+          {% empty %}
+          <tr class="empty-row"><td colspan="5"><i class="bi bi-box me-1"></i>No inventory transactions</td></tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- ── HEALTH CONDITIONS RECORDED ────────────────── -->
+  <div class="sec-card">
+    <div class="sec-head" data-bs-toggle="collapse" data-bs-target="#secHC">
+      <h2 class="sec-head-title">
+        <i class="bi bi-heart-pulse opacity-50"></i> Health Conditions Recorded
+        <span class="badge bg-secondary-subtle text-secondary fw-normal">{{ summary.health_conditions }}</span>
+      </h2>
+      <i class="bi bi-chevron-down chev"></i>
+    </div>
+    <div class="collapse show sec-body" id="secHC">
+      <table class="h-table">
+        <thead><tr><th>Date</th><th>PDL</th><th>Condition</th><th>Diagnosed</th><th>Active</th></tr></thead>
+        <tbody>
+          {% for hc in health_conditions_recorded %}
+          <tr>
+            <td style="white-space:nowrap;">{{ hc.created_at|date:"M d, Y" }}</td>
+            <td><a href="{% url 'pdl:pdl_profile' hc.pdl_profile.username.username %}" class="text-decoration-none fw-semibold">{{ hc.pdl_profile }}</a></td>
+            <td>{{ hc.get_condition_display }}</td>
+            <td>{{ hc.date_diagnosed|date:"M d, Y"|default:"—" }}</td>
+            <td>
+              {% if hc.is_active %}
+                <span class="type-badge tb-completed">Active</span>
+              {% else %}
+                <span class="type-badge" style="background:rgba(128,128,128,.1);color:rgba(128,128,128,.7);">Inactive</span>
+              {% endif %}
+            </td>
+          </tr>
+          {% empty %}
+          <tr class="empty-row"><td colspan="5"><i class="bi bi-heart me-1"></i>No health conditions recorded</td></tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+</div><!-- /hist-wrap -->
+
+<script>
+  // Rotate chevron on collapse toggle
+  document.querySelectorAll('[data-bs-toggle="collapse"]').forEach(btn => {
+    const target = document.querySelector(btn.dataset.bsTarget);
+    if (!target) return;
+    target.addEventListener('hide.bs.collapse', () => btn.classList.add('collapsed'));
+    target.addEventListener('show.bs.collapse', () => btn.classList.remove('collapsed'));
+  });
+</script>
+{% endblock %}

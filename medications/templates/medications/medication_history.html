@@ -1,0 +1,215 @@
+
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Medication History - {{ medication.name }}{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <!-- Header -->
+    <div class="row mb-4">
+        <div class="col">
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb">
+                    <li class="breadcrumb-item"><a href="{% url 'medications:inventory_list' %}">Inventory</a></li>
+                    <li class="breadcrumb-item"><a href="{% url 'medications:medication_detail' medication.id %}">{{ medication.name }}</a></li>
+                    <li class="breadcrumb-item active" aria-current="page">Transaction History</li>
+                </ol>
+            </nav>
+        </div>
+    </div>
+
+    <!-- Medication Info Card -->
+    <div class="card mb-4">
+        <div class="card-header bg-primary text-white">
+            <h4 class="mb-0">
+                <i class="bi bi-clock-history"></i> Transaction History: {{ medication.name }}
+            </h4>
+        </div>
+        <div class="card-body">
+            <div class="row">
+                <div class="col-md-3">
+                    <strong>Generic Name:</strong><br>
+                    {{ medication.generic_name.name }}
+                </div>
+                <div class="col-md-3">
+                    <strong>Type:</strong><br>
+                    <span class="badge bg-info">{{ medication.generic_name.medication_type.name }}</span>
+                </div>
+                <div class="col-md-3">
+                    <strong>Strength:</strong><br>
+                    {{ medication.strength }}
+                </div>
+                <div class="col-md-3">
+                    <strong>Current Stock:</strong><br>
+                    {% if inventory %}
+                        <span class="fw-bold {% if inventory.is_low_stock %}text-danger{% else %}text-success{% endif %}">
+                            {{ inventory.quantity }} units
+                        </span>
+                    {% else %}
+                        <span class="text-muted">No inventory</span>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Transaction History -->
+    <div class="card">
+        <div class="card-header">
+            <h5 class="mb-0">All Transactions</h5>
+        </div>
+        <div class="card-body">
+            {% if transactions %}
+                <div class="table-responsive">
+                    <table class="table table-hover">
+                        <thead class="table-light">
+                            <tr>
+                                <th>Date & Time</th>
+                                <th>Transaction Type</th>
+                                <th>Quantity Change</th>
+                                <th>Performed By</th>
+                                <th>Related Prescription</th>
+                                <th>Notes</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for transaction in transactions %}
+                            <tr>
+                                <td>
+                                    <i class="bi bi-calendar3"></i>
+                                    {{ transaction.timestamp|date:"M d, Y" }}<br>
+                                    <small class="text-muted">{{ transaction.timestamp|time:"h:i A" }}</small>
+                                </td>
+                                <td>
+                                    {% if transaction.transaction_type == 'addition' %}
+                                        <span class="badge bg-success">
+                                            <i class="bi bi-plus-circle"></i> {{ transaction.get_transaction_type_display }}
+                                        </span>
+                                    {% elif transaction.transaction_type == 'dispensation' %}
+                                        <span class="badge bg-primary">
+                                            <i class="bi bi-box-arrow-right"></i> {{ transaction.get_transaction_type_display }}
+                                        </span>
+                                    {% elif transaction.transaction_type == 'adjustment' %}
+                                        <span class="badge bg-warning text-dark">
+                                            <i class="bi bi-pencil-square"></i> {{ transaction.get_transaction_type_display }}
+                                        </span>
+                                    {% elif transaction.transaction_type == 'return' %}
+                                        <span class="badge bg-info">
+                                            <i class="bi bi-arrow-return-left"></i> {{ transaction.get_transaction_type_display }}
+                                        </span>
+                                    {% elif transaction.transaction_type == 'expired' %}
+                                        <span class="badge bg-danger">
+                                            <i class="bi bi-trash"></i> {{ transaction.get_transaction_type_display }}
+                                        </span>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    <span class="fw-bold {% if transaction.quantity_change > 0 %}text-success{% else %}text-danger{% endif %}">
+                                        {% if transaction.quantity_change > 0 %}+{% endif %}{{ transaction.quantity_change }}
+                                    </span>
+                                </td>
+                                <td>
+                                    {% if transaction.performed_by %}
+                                        <i class="bi bi-person"></i> {{ transaction.performed_by.get_full_name|default:transaction.performed_by.username }}
+                                    {% else %}
+                                        <span class="text-muted">System</span>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    {% if transaction.prescription %}
+                                        <a href="{% url 'medications:prescription_detail' transaction.prescription.id %}" class="text-decoration-none">
+                                            <i class="bi bi-file-medical"></i> RX-{{ transaction.prescription.id }}
+                                        </a>
+                                        <br>
+                                        <small class="text-muted">{{ transaction.prescription.pdl_profile }}</small>
+                                    {% else %}
+                                        <span class="text-muted">—</span>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    {% if transaction.notes %}
+                                        <small>{{ transaction.notes }}</small>
+                                    {% else %}
+                                        <span class="text-muted">—</span>
+                                    {% endif %}
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+
+                <!-- Summary Statistics -->
+                <div class="row mt-4">
+                    <div class="col-md-12">
+                        <div class="alert alert-info">
+                            <h6 class="alert-heading"><i class="bi bi-info-circle"></i> Summary</h6>
+                            <div class="row">
+                                <div class="col-md-3">
+                                    <strong>Total Transactions:</strong> {{ transactions.count }}
+                                </div>
+                                <div class="col-md-3">
+                                    <strong>Additions:</strong> 
+                                    <span class="text-success">
+                                        {{ transactions|length }}
+                                    </span>
+                                </div>
+                                <div class="col-md-3">
+                                    <strong>Dispensations:</strong> 
+                                    <span class="text-primary">
+                                        {% with disp=transactions|length %}{{ disp }}{% endwith %}
+                                    </span>
+                                </div>
+                                <div class="col-md-3">
+                                    <strong>Current Stock:</strong> 
+                                    {% if inventory %}
+                                        <span class="fw-bold">{{ inventory.quantity }}</span>
+                                    {% else %}
+                                        <span class="text-muted">N/A</span>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            {% else %}
+                <div class="text-center py-5">
+                    <i class="bi bi-inbox display-1 text-muted"></i>
+                    <p class="text-muted mt-3">No transaction history available for this medication.</p>
+                    {% if inventory %}
+                        <a href="{% url 'medications:update_inventory' medication.id %}" class="btn btn-primary mt-2">
+                            <i class="bi bi-plus-circle"></i> Add Transaction
+                        </a>
+                    {% endif %}
+                </div>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- Action Buttons -->
+    <div class="mt-4 mb-5">
+        <a href="{% url 'medications:inventory_list' %}" class="btn btn-secondary">
+            <i class="bi bi-arrow-left"></i> Back to Inventory
+        </a>
+        <a href="{% url 'medications:medication_detail' medication.id %}" class="btn btn-info">
+            <i class="bi bi-eye"></i> View Details
+        </a>
+        {% if inventory %}
+            <a href="{% url 'medications:update_inventory' medication.id %}" class="btn btn-warning">
+                <i class="bi bi-pencil-square"></i> Update Stock
+            </a>
+        {% endif %}
+    </div>
+</div>
+
+<style>
+    .table td {
+        vertical-align: middle;
+    }
+    .breadcrumb {
+        background-color: transparent;
+        padding: 0;
+    }
+</style>
+{% endblock %}

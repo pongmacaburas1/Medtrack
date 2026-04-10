@@ -1,0 +1,437 @@
+{% extends "base.html" %}
+
+{% block title %}
+Add New PDL
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid mt-4">
+    <h1 class="h3 mb-4"><i class="bi bi-person-plus"></i> Add New PDL</h1>
+
+    <form method="post">
+        {% csrf_token %}
+
+        <div class="card shadow">
+            <div class="card-body">
+                <!-- Tabs -->
+                <ul class="nav nav-tabs" id="pdlTabs" role="tablist">
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link active" id="user-tab" data-bs-toggle="tab" data-bs-target="#user" type="button" role="tab">
+                            <i class="bi bi-person"></i> User Info
+                        </button>
+                    </li>
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link" id="profile-tab" data-bs-toggle="tab" data-bs-target="#profile" type="button" role="tab">
+                            <i class="bi bi-card-heading"></i> PDL Profile
+                        </button>
+                    </li>
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link" id="detention-tab" data-bs-toggle="tab" data-bs-target="#detention" type="button" role="tab">
+                            <i class="bi bi-info-circle"></i> Detention Details
+                        </button>
+                    </li>
+                </ul>
+
+                <!-- Tab contents -->
+                <div class="tab-content mt-3" id="pdlTabsContent">
+                    <!-- User Info -->
+                    <div class="tab-pane fade show active" id="user" role="tabpanel">
+                        <div class="row g-3">
+                            {% for field in user_form %}
+                                <div class="col-md-6">
+                                    <label class="form-label">{{ field.label }}</label>
+                                    {{ field }}
+                                    {% if field.help_text %}
+                                        <div class="form-text">{{ field.help_text }}</div>
+                                    {% endif %}
+                                    {% for error in field.errors %}
+                                        <div class="text-danger small">{{ error }}</div>
+                                    {% endfor %}
+                                </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+
+                    <!-- PDL Profile -->
+                    <div class="tab-pane fade" id="profile" role="tabpanel">
+<div class="row g-3 align-items-end mb-3">
+  <div class="col-md-3">
+    <label class="form-label">First name</label>
+    <input type="text" id="ro-first-name" class="form-control" value="" readonly>
+    <div class="form-text">Read-only (mirrors User → First name)</div>
+  </div>
+
+  <div class="col-md-3">
+    <label class="form-label">Middle name</label>
+    {{ pdl_profile_form.middle_name }}
+    <div class="form-text">Enter middle name.</div>
+
+    {% for error in pdl_profile_form.middle_name.errors %}
+      <div class="text-danger small">{{ error }}</div>
+    {% endfor %}
+  </div>
+
+  <div class="col-md-3">
+    <label class="form-label">Last name</label>
+    <input type="text" id="ro-last-name" class="form-control" value="" readonly>
+    <div class="form-text">Read-only (mirrors User → Last name)</div>
+  </div>
+
+  <div class="col-md-3">
+    <label class="form-label">Suffix</label>
+    {{ pdl_profile_form.name_suffix }}
+    <div class="form-text">Select suffix if applicable.</div>
+
+    {% for error in pdl_profile_form.name_suffix.errors %}
+      <div class="text-danger small">{{ error }}</div>
+    {% endfor %}
+  </div>
+</div>
+
+  <div class="row g-3 align-items-start">
+    <!-- URL input -->
+    <div class="col-md-9">
+      <label class="form-label">Profile Photo URL</label>
+      {{ pdl_profile_form.profile_picture_url }}
+      {% if pdl_profile_form.profile_picture_url.help_text %}
+        <div class="form-text">{{ pdl_profile_form.profile_picture_url.help_text }}</div>
+      {% else %}
+        <div class="form-text">Paste a direct image URL (jpg, png, webp, etc.).</div>
+      {% endif %}
+      {% for error in pdl_profile_form.profile_picture_url.errors %}
+        <div class="text-danger small">{{ error }}</div>
+      {% endfor %}
+    </div>
+
+    <!-- Live preview -->
+    <div class="col-md-3">
+      <label class="form-label d-flex justify-content-between align-items-center">
+        <span>Preview</span>
+      </label>
+      <div id="add-profile-photo-preview"
+           class="border rounded p-2 d-flex flex-column align-items-center justify-content-center"
+           style="height: 170px;"
+           aria-live="polite"
+           aria-atomic="true">
+        <i class="bi bi-image fs-1 text-secondary mb-2" aria-hidden="true"></i>
+        <div class="text-muted small text-center">Paste a URL to preview</div>
+      </div>
+    </div>
+  </div>
+
+  {# Render the rest of the PDL profile fields normally #}
+  <div class="row g-3 mt-1">
+  {% for field in pdl_profile_form %}
+ {% if field.name != "profile_picture_url" and field.name != "middle_name" and field.name != "name_suffix" %}
+
+
+        <div class="col-md-6">
+          <label class="form-label">{{ field.label }}</label>
+          {{ field }}
+          {% if field.help_text %}
+            <div class="form-text">{{ field.help_text }}</div>
+          {% endif %}
+          {% for error in field.errors %}
+            <div class="text-danger small">{{ error }}</div>
+          {% endfor %}
+        </div>
+      {% endif %}
+    {% endfor %}
+  </div>
+</div>
+
+                    <!-- Detention Details -->
+                    <div class="tab-pane fade" id="detention" role="tabpanel">
+                        <div class="row g-3">
+                            {% for field in detention_instance_form %}
+                                <div class="col-md-6">
+                                    <label class="form-label">{{ field.label }}</label>
+                                    {{ field }}
+                                    {% if field.help_text %}
+                                        <div class="form-text">{{ field.help_text }}</div>
+                                    {% endif %}
+                                    {% for error in field.errors %}
+                                        <div class="text-danger small">{{ error }}</div>
+                                    {% endfor %}
+                                </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Buttons -->
+                <div class="mt-4">
+                    <button type="submit" class="btn btn-primary">
+                        <i class="bi bi-save"></i> Save
+                    </button>
+                    <a href="{% url 'pdl:pdl_list' %}" class="btn btn-secondary">
+                        <i class="bi bi-x-circle"></i> Cancel
+                    </a>
+                </div>
+            </div>
+        </div>
+    </form>
+</div>
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+  const form = document.querySelector("form");
+  const tabButtons = {
+    user:      document.querySelector('#user-tab'),
+    profile:   document.querySelector('#profile-tab'),
+    detention: document.querySelector('#detention-tab'),
+  };
+  const tabPanes = {
+    user:      document.querySelector('#user'),
+    profile:   document.querySelector('#profile'),
+    detention: document.querySelector('#detention'),
+  };
+
+  // ---------- A) UTILITIES
+  function isEmptyField(el){
+    if (el.disabled || el.readOnly) return false;
+    const tag = el.tagName.toLowerCase();
+    if (tag === 'select') return (el.value === '' || el.value == null);
+    if (tag === 'textarea') return el.value.trim() === '';
+    if (tag === 'input') {
+      const type = (el.getAttribute('type') || 'text').toLowerCase();
+      if (['checkbox','radio'].includes(type)) {
+        const name = el.name;
+        const group = form.querySelectorAll(`input[name="${CSS.escape(name)}"]`);
+        return ![...group].some(g => g.checked);
+      }
+      return el.value.trim() === '';
+    }
+    return false;
+  }
+
+  function markInvalid(el, message){
+    if (!el.classList.contains('is-invalid')) {
+      el.classList.add('is-invalid');
+      el.setAttribute('aria-invalid','true');
+      let fb = el.nextElementSibling;
+      const defaultMsg = "This field is required.";
+      if (!fb || !fb.classList.contains('invalid-feedback')) {
+        fb = document.createElement('div');
+        fb.className = 'invalid-feedback';
+        el.insertAdjacentElement('afterend', fb);
+      }
+      fb.textContent = message || defaultMsg;
+    }
+  }
+
+  function clearInvalid(el){
+    el.classList.remove('is-invalid');
+    el.removeAttribute('aria-invalid');
+    const fb = el.nextElementSibling;
+    if (fb && fb.classList.contains('invalid-feedback')) {
+      fb.textContent = '';
+    }
+  }
+
+  function updateTabIndicators(){
+    for (const [key, pane] of Object.entries(tabPanes)) {
+      const hasErr = pane.querySelector('.is-invalid, .text-danger.small');
+      tabButtons[key]?.classList.toggle('tab-has-error', !!hasErr);
+    }
+  }
+
+  function showTabFor(el){
+    const pane = el.closest('.tab-pane');
+    if (!pane) return;
+    const id = pane.id;
+    const button = document.querySelector(`[data-bs-target="#${id}"]`);
+    if (button && window.bootstrap?.Tab) {
+      new bootstrap.Tab(button).show();
+    }
+  }
+
+  // ---------- B) VALIDATION ON SUBMIT
+  function validateForm(){
+    const offenders = [];
+    const requiredEls = form.querySelectorAll("input[required], select[required], textarea[required]");
+    requiredEls.forEach(el => {
+      if (el.type === 'radio' || el.type === 'checkbox') {
+        if (form.querySelectorAll(`input[name="${CSS.escape(el.name)}"]`)[0] !== el) return;
+      }
+      if (isEmptyField(el)) offenders.push(el);
+    });
+
+    form.querySelectorAll('.text-danger.small').forEach(errEl => {
+      const wrapper = errEl.closest('.col-md-6') || errEl.closest('.mb-3') || errEl.parentElement;
+      const input = wrapper ? wrapper.querySelector('input, select, textarea') : null;
+      if (input) offenders.push(input);
+    });
+
+    const unique = [...new Set(offenders)];
+    unique.forEach(el => markInvalid(el));
+    updateTabIndicators();
+    return unique;
+  }
+
+  form.addEventListener('submit', function(e){
+    const invalid = validateForm();
+    if (invalid.length > 0) {
+      e.preventDefault();
+      const first = invalid[0];
+      showTabFor(first);
+      first.scrollIntoView({block:'center', behavior: 'smooth'});
+      setTimeout(() => first.focus({preventScroll:true}), 300);
+    }
+  });
+
+  // Live cleanup
+  form.addEventListener('input', function(e){
+    const el = e.target.closest('input, select, textarea');
+    if (!el) return;
+    if (!el.hasAttribute('required')) {
+      if (el.classList.contains('is-invalid') && el.value.trim() !== '') clearInvalid(el);
+    } else {
+      if (!isEmptyField(el)) clearInvalid(el);
+    }
+    updateTabIndicators();
+  });
+
+  form.addEventListener('change', function(e){
+    const el = e.target.closest('input, select, textarea');
+    if (!el) return;
+    if (!isEmptyField(el)) clearInvalid(el);
+    updateTabIndicators();
+  });
+
+  // Prime from server errors
+  (function primeFromServerErrors(){
+    form.querySelectorAll('.text-danger.small').forEach(errEl => {
+      const wrapper = errEl.closest('.col-md-6') || errEl.closest('.mb-3') || errEl.parentElement;
+      const input = wrapper ? wrapper.querySelector('input, select, textarea') : null;
+      if (input) markInvalid(input, errEl.textContent.trim());
+    });
+    updateTabIndicators();
+    const firstInvalid = form.querySelector('.is-invalid');
+    if (firstInvalid) showTabFor(firstInvalid);
+  })();
+
+  // ---------- C) USERNAME/EMAIL AUTOFILL w/ whitespace removal + 5-digit suffix
+  const firstNameInput = document.getElementById("id_first_name");
+  const lastNameInput  = document.getElementById("id_last_name");
+  const usernameInput  = document.getElementById("id_username");
+  const emailInput     = document.getElementById("id_email");
+
+  if (usernameInput) usernameInput.readOnly = true;
+  if (emailInput)    emailInput.readOnly = true;
+
+  function sanitizeName(s) {
+    return (s || "")
+      .normalize("NFD").replace(/[\u0300-\u036f]/g, "")
+      .toLowerCase()
+      .replace(/[^a-z0-9]/g, "");
+  }
+
+  let lastBase = "";
+  let currentSuffix = "";
+
+  function ensureSuffix() {
+    if (!currentSuffix || !/^\d{5}$/.test(currentSuffix)) {
+      currentSuffix = String(Math.floor(10000 + Math.random() * 90000));
+    }
+  }
+
+  function updateCredentials() {
+    const first = sanitizeName(firstNameInput?.value) || "nofirstname";
+    const last  = sanitizeName(lastNameInput?.value)  || "nolastname";
+    const base = `${first}.${last}`;
+    if (base !== lastBase) {
+      lastBase = base;
+      currentSuffix = "";
+      ensureSuffix();
+    } else {
+      ensureSuffix();
+    }
+    const finalUser  = `${base}${currentSuffix}`;
+    const finalEmail = `${finalUser}@bjmptest.com`;
+    if (usernameInput) usernameInput.value = finalUser;
+    if (emailInput)    emailInput.value    = finalEmail;
+  }
+
+  firstNameInput?.addEventListener("input", updateCredentials);
+  lastNameInput?.addEventListener("input", updateCredentials);
+  updateCredentials();
+
+  // ---------- D) READ-ONLY FIRST/LAST MIRRORS IN PROFILE TAB
+  const roFirst = document.getElementById("ro-first-name");
+  const roLast  = document.getElementById("ro-last-name");
+
+  function syncNameMirrors() {
+    if (roFirst && firstNameInput) roFirst.value = firstNameInput.value || "";
+    if (roLast  && lastNameInput)  roLast.value  = lastNameInput.value  || "";
+  }
+
+  syncNameMirrors();
+  firstNameInput?.addEventListener("input", syncNameMirrors);
+  lastNameInput?.addEventListener("input", syncNameMirrors);
+  firstNameInput?.addEventListener("change", syncNameMirrors);
+  lastNameInput?.addEventListener("change", syncNameMirrors);
+
+  // ---------- E) PROFILE PHOTO PREVIEW (Add-New page)
+  const urlInput = document.querySelector('[name="profile_picture_url"]');
+  const previewBox = document.getElementById('add-profile-photo-preview');
+
+  if (urlInput && previewBox) {
+    let debounceTimer = null;
+
+    function showPlaceholder(){
+      previewBox.innerHTML = `
+        <i class="bi bi-image fs-1 text-secondary mb-2" aria-hidden="true"></i>
+        <div class="text-muted small text-center">Paste a URL to preview</div>
+      `;
+    }
+    function showError(){
+      previewBox.innerHTML = `
+        <i class="bi bi-exclamation-triangle fs-1 text-danger mb-2" aria-hidden="true"></i>
+        <div class="text-danger small text-center">Unable to retrieve from URL</div>
+      `;
+    }
+    function showImage(src){
+      previewBox.innerHTML = "";
+      const img = document.createElement("img");
+      img.src = src;
+      img.width = 140;
+      img.height = 140;
+      img.alt = "Profile photo preview";
+      img.loading = "lazy";
+      img.referrerPolicy = "no-referrer";
+      img.className = "rounded-circle object-fit-cover border shadow-sm";
+      previewBox.appendChild(img);
+    }
+    function updatePreview(value){
+      const url = (value || "").trim();
+      if (!url){ showPlaceholder(); return; }
+      const testImg = new Image();
+      testImg.referrerPolicy = "no-referrer";
+      testImg.onload = () => showImage(url);
+      testImg.onerror = showError;
+      try{
+        const u = new URL(url, window.location.origin);
+        if (!/^https?:$/i.test(u.protocol)) { showError(); return; }
+        testImg.src = u.href;
+      }catch{
+        showError();
+      }
+    }
+    function debounced(){
+      clearTimeout(debounceTimer);
+      debounceTimer = setTimeout(() => updatePreview(urlInput.value), 300);
+    }
+
+    // Initial (prefill) + live updates
+    updatePreview(urlInput.value);
+    urlInput.addEventListener("input", debounced);
+    urlInput.addEventListener("change", debounced);
+    urlInput.addEventListener("paste", debounced);
+    urlInput.addEventListener("blur", debounced);
+  }
+});
+</script>
+
+
+
+{% endblock %}

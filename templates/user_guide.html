@@ -1,0 +1,762 @@
+
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}User Guide - Medtrack{% endblock %}
+
+{% block extra_css %}
+<style>
+  .guide-container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 40px 20px;
+  }
+  
+  .guide-header {
+    text-align: center;
+    margin-bottom: 50px;
+    padding-bottom: 30px;
+    border-bottom: 3px solid #0d6efd;
+  }
+  
+  .guide-header h1 {
+    font-size: 2.5rem;
+    font-weight: 700;
+    margin-bottom: 15px;
+  }
+  
+  .guide-header p {
+    font-size: 1.1rem;
+    color: #6c757d;
+  }
+  
+  .guide-nav {
+    background: var(--bs-body-bg);
+    border: 1px solid var(--bs-border-color);
+    border-radius: 8px;
+    padding: 20px;
+    margin-bottom: 30px;
+    position: sticky;
+    top: 80px;
+  }
+  
+  .guide-nav h5 {
+    font-weight: 600;
+    margin-bottom: 15px;
+    color: #0d6efd;
+  }
+  
+  .guide-nav ul {
+    list-style: none;
+    padding-left: 0;
+  }
+  
+  .guide-nav ul li {
+    margin-bottom: 8px;
+  }
+  
+  .guide-nav ul li a {
+    text-decoration: none;
+    color: var(--bs-body-color);
+    display: block;
+    padding: 8px 12px;
+    border-radius: 4px;
+    transition: all 0.2s;
+  }
+  
+  .guide-nav ul li a:hover {
+    background: var(--bs-primary);
+    color: white;
+  }
+  
+  .guide-section {
+    background: var(--bs-body-bg);
+    border: 1px solid var(--bs-border-color);
+    border-radius: 8px;
+    padding: 30px;
+    margin-bottom: 30px;
+    scroll-margin-top: 100px;
+  }
+  
+  .guide-section h2 {
+    font-size: 1.8rem;
+    font-weight: 600;
+    margin-bottom: 20px;
+    color: #0d6efd;
+    border-bottom: 2px solid #0d6efd;
+    padding-bottom: 10px;
+  }
+  
+  .guide-section h3 {
+    font-size: 1.4rem;
+    font-weight: 600;
+    margin-top: 25px;
+    margin-bottom: 15px;
+  }
+  
+  .guide-section h4 {
+    font-size: 1.2rem;
+    font-weight: 600;
+    margin-top: 20px;
+    margin-bottom: 10px;
+    color: #495057;
+  }
+  
+  .guide-section p {
+    line-height: 1.8;
+    margin-bottom: 15px;
+  }
+  
+  .guide-section ul,
+  .guide-section ol {
+    line-height: 1.8;
+    margin-bottom: 20px;
+  }
+  
+  .guide-section li {
+    margin-bottom: 8px;
+  }
+  
+  .code-block {
+    background: #f8f9fa;
+    border: 1px solid #dee2e6;
+    border-radius: 4px;
+    padding: 15px;
+    margin: 15px 0;
+    font-family: 'Courier New', monospace;
+    overflow-x: auto;
+  }
+  
+  [data-bs-theme="dark"] .code-block {
+    background: #2d2d2d;
+    border-color: #444;
+  }
+  
+  .alert-tip {
+    background: #e7f3ff;
+    border-left: 4px solid #0d6efd;
+    padding: 15px;
+    margin: 20px 0;
+    border-radius: 4px;
+  }
+  
+  [data-bs-theme="dark"] .alert-tip {
+    background: #1a3a52;
+    border-left-color: #0d6efd;
+  }
+  
+  .alert-warning-custom {
+    background: #fff3cd;
+    border-left: 4px solid #ffc107;
+    padding: 15px;
+    margin: 20px 0;
+    border-radius: 4px;
+  }
+  
+  [data-bs-theme="dark"] .alert-warning-custom {
+    background: #4a3f1a;
+    border-left-color: #ffc107;
+  }
+  
+  .screenshot {
+    max-width: 100%;
+    border: 1px solid var(--bs-border-color);
+    border-radius: 8px;
+    margin: 20px 0;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+  }
+  
+  .feature-badge {
+    display: inline-block;
+    background: #0d6efd;
+    color: white;
+    padding: 4px 12px;
+    border-radius: 20px;
+    font-size: 0.85rem;
+    font-weight: 600;
+    margin-right: 8px;
+    margin-bottom: 8px;
+  }
+  
+  .step-number {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 30px;
+    height: 30px;
+    background: #0d6efd;
+    color: white;
+    border-radius: 50%;
+    font-weight: 600;
+    margin-right: 10px;
+  }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="guide-container">
+  <div class="guide-header">
+    <h1><i class="bi bi-book me-3"></i>Medtrack User Guide</h1>
+    <p>Comprehensive guide for the Health Monitoring System for Person Deprived of Liberty (PDL)</p>
+    <p class="text-muted">Bureau of Jail Management and Penology - San Jose District Jail</p>
+  </div>
+
+  <div class="row">
+    <!-- Sidebar Navigation -->
+    <div class="col-lg-3">
+      <div class="guide-nav">
+        <h5><i class="bi bi-list-ul me-2"></i>Contents</h5>
+        <ul>
+          <li><a href="#introduction"><i class="bi bi-chevron-right me-2"></i>Introduction</a></li>
+          <li><a href="#getting-started"><i class="bi bi-chevron-right me-2"></i>Getting Started</a></li>
+          <li><a href="#login"><i class="bi bi-chevron-right me-2"></i>Login & Authentication</a></li>
+          <li><a href="#dashboard"><i class="bi bi-chevron-right me-2"></i>Doctor Dashboard</a></li>
+          <li><a href="#pdl-management"><i class="bi bi-chevron-right me-2"></i>PDL Management</a></li>
+          <li><a href="#consultations"><i class="bi bi-chevron-right me-2"></i>Consultations</a></li>
+          <li><a href="#medications"><i class="bi bi-chevron-right me-2"></i>Medications</a></li>
+          <li><a href="#reports"><i class="bi bi-chevron-right me-2"></i>Reports</a></li>
+          <li><a href="#calendar"><i class="bi bi-chevron-right me-2"></i>Calendar</a></li>
+          <li><a href="#troubleshooting"><i class="bi bi-chevron-right me-2"></i>Troubleshooting</a></li>
+        </ul>
+      </div>
+    </div>
+
+    <!-- Main Content -->
+    <div class="col-lg-9">
+      
+      <!-- Introduction -->
+      <section id="introduction" class="guide-section">
+        <h2><i class="bi bi-info-circle me-2"></i>Introduction</h2>
+        <p>
+          Welcome to Medtrack, the Health Monitoring System designed specifically for managing medical records 
+          and consultations for Persons Deprived of Liberty (PDL) at the San Jose District Jail, BJMP.
+        </p>
+        
+        <h3>System Overview</h3>
+        <p>Medtrack provides comprehensive tools for:</p>
+        <ul>
+          <li><strong>PDL Health Records Management</strong> - Track medical history, vital signs, and health conditions</li>
+          <li><strong>Consultation Scheduling</strong> - Manage appointments and medical consultations</li>
+          <li><strong>Medication Tracking</strong> - Monitor prescriptions and medication administration</li>
+          <li><strong>Reporting & Analytics</strong> - Generate health reports and statistics</li>
+          <li><strong>Calendar Integration</strong> - View and manage scheduled consultations</li>
+        </ul>
+
+        <div class="alert-tip">
+          <strong><i class="bi bi-lightbulb me-2"></i>Tip:</strong> 
+          This system is optimized for use by medical professionals within the BJMP facility. 
+          All data is confidential and should be handled according to medical privacy regulations.
+        </div>
+      </section>
+
+      <!-- Getting Started -->
+      <section id="getting-started" class="guide-section">
+        <h2><i class="bi bi-rocket-takeoff me-2"></i>Getting Started</h2>
+        
+        <h3>System Requirements</h3>
+        <ul>
+          <li>Modern web browser (Chrome, Firefox, Edge, Safari)</li>
+          <li>Internet connection</li>
+          <li>Valid user credentials provided by system administrator</li>
+        </ul>
+
+        <h3>Accessing the System</h3>
+        <ol>
+          <li>Open your web browser</li>
+          <li>Navigate to the Medtrack URL provided by your administrator</li>
+          <li>You will be directed to the login page</li>
+        </ol>
+
+        <div class="alert-warning-custom">
+          <strong><i class="bi bi-exclamation-triangle me-2"></i>Important:</strong>
+          Never share your login credentials with anyone. Each user is responsible for activities 
+          performed under their account.
+        </div>
+      </section>
+
+      <!-- Login & Authentication -->
+      <section id="login" class="guide-section">
+        <h2><i class="bi bi-shield-lock me-2"></i>Login & Authentication</h2>
+        
+        <h3>How to Login</h3>
+        <p><span class="step-number">1</span> Click on the "Login" button on the homepage</p>
+        <p><span class="step-number">2</span> Enter your username in the Username field</p>
+        <p><span class="step-number">3</span> Enter your password in the Password field</p>
+        <p><span class="step-number">4</span> Click the "Login" button</p>
+
+        <h3>After Successful Login</h3>
+        <p>Upon successful authentication, you will see:</p>
+        <ul>
+          <li>A welcome message with your username</li>
+          <li>"Go to Dashboard" button - Access the main doctor dashboard</li>
+          <li>"Logout" button - End your session securely</li>
+        </ul>
+
+        <h3>Logout</h3>
+        <p>To logout safely:</p>
+        <ol>
+          <li>Click the red "Logout" button</li>
+          <li>You will be redirected to the login page</li>
+          <li>Your session will be terminated</li>
+        </ol>
+
+        <div class="alert-tip">
+          <strong><i class="bi bi-lightbulb me-2"></i>Security Tip:</strong>
+          Always logout when you finish using the system, especially on shared computers.
+        </div>
+      </section>
+
+      <!-- Doctor Dashboard -->
+      <section id="dashboard" class="guide-section">
+        <h2><i class="bi bi-speedometer2 me-2"></i>Doctor Dashboard</h2>
+        
+        <p>The Doctor Dashboard is your central hub for managing all medical activities.</p>
+
+        <h3>Dashboard Features</h3>
+        
+        <h4><i class="bi bi-calendar-check me-2"></i>Today's Consultations</h4>
+        <ul>
+          <li>View all scheduled consultations for today</li>
+          <li>See patient names, times, and consultation types</li>
+          <li>Quick access to patient records</li>
+          <li>Status indicators (Scheduled, Completed, Canceled)</li>
+        </ul>
+
+        <h4><i class="bi bi-exclamation-triangle me-2"></i>Emergency Cases</h4>
+        <ul>
+          <li>Highlighted in red for immediate attention</li>
+          <li>Priority access to patient information</li>
+          <li>Quick action buttons for urgent care</li>
+        </ul>
+
+        <h4><i class="bi bi-bar-chart me-2"></i>Statistics Overview</h4>
+        <ul>
+          <li>Total consultations this month</li>
+          <li>Completed vs. pending consultations</li>
+          <li>Emergency cases count</li>
+          <li>Active medications prescribed</li>
+        </ul>
+
+        <h3>Quick Actions</h3>
+        <div class="row">
+          <div class="col-md-6">
+            <span class="feature-badge">Add Consultation</span>
+            <p>Schedule a new consultation for a PDL</p>
+          </div>
+          <div class="col-md-6">
+            <span class="feature-badge">View PDL List</span>
+            <p>Access complete list of all PDLs</p>
+          </div>
+          <div class="col-md-6">
+            <span class="feature-badge">Prescribe Medication</span>
+            <p>Add new medication prescriptions</p>
+          </div>
+          <div class="col-md-6">
+            <span class="feature-badge">Generate Reports</span>
+            <p>Create health and consultation reports</p>
+          </div>
+        </div>
+      </section>
+
+      <!-- PDL Management -->
+      <section id="pdl-management" class="guide-section">
+        <h2><i class="bi bi-people me-2"></i>PDL Management</h2>
+        
+        <h3>Viewing PDL List</h3>
+        <p>Access the complete list of Persons Deprived of Liberty:</p>
+        <ol>
+          <li>Click "PDL List" in the navigation menu</li>
+          <li>Browse through the list or use the search function</li>
+          <li>Click on any PDL name to view their complete profile</li>
+        </ol>
+
+        <h3>PDL Profile Information</h3>
+        <p>Each PDL profile contains:</p>
+        
+        <h4>Personal Information</h4>
+        <ul>
+          <li>Full name and photo</li>
+          <li>Date of birth and age</li>
+          <li>Gender and contact information</li>
+          <li>Emergency contact details</li>
+        </ul>
+
+        <h4>Detention Information</h4>
+        <ul>
+          <li>Current detention room</li>
+          <li>Admission date</li>
+          <li>Case details</li>
+          <li>Expected release date (if applicable)</li>
+        </ul>
+
+        <h4>Medical Information</h4>
+        <ul>
+          <li>Blood type</li>
+          <li>Known allergies</li>
+          <li>Chronic conditions</li>
+          <li>Current medications</li>
+          <li>Vaccination records</li>
+        </ul>
+
+        <h4>Vital Signs History</h4>
+        <ul>
+          <li>Blood pressure readings</li>
+          <li>Heart rate</li>
+          <li>Temperature</li>
+          <li>Weight and BMI</li>
+          <li>Respiratory rate</li>
+        </ul>
+
+        <h3>Adding a New PDL</h3>
+        <p><span class="step-number">1</span> Click "Add PDL" button</p>
+        <p><span class="step-number">2</span> Fill in all required fields marked with *</p>
+        <p><span class="step-number">3</span> Upload a photo (optional but recommended)</p>
+        <p><span class="step-number">4</span> Enter medical history and allergies</p>
+        <p><span class="step-number">5</span> Click "Save" to create the record</p>
+
+        <h3>Editing PDL Information</h3>
+        <ol>
+          <li>Navigate to the PDL's profile</li>
+          <li>Click the "Edit" button</li>
+          <li>Update the necessary information</li>
+          <li>Click "Save Changes"</li>
+        </ol>
+
+        <div class="alert-warning-custom">
+          <strong><i class="bi bi-exclamation-triangle me-2"></i>Important:</strong>
+          Always verify PDL information before making changes. Incorrect medical information 
+          can lead to serious health risks.
+        </div>
+      </section>
+
+      <!-- Consultations -->
+      <section id="consultations" class="guide-section">
+        <h2><i class="bi bi-clipboard2-pulse me-2"></i>Consultations</h2>
+        
+        <h3>Scheduling a Consultation</h3>
+        <p><span class="step-number">1</span> From the dashboard, click "Add Consultation"</p>
+        <p><span class="step-number">2</span> Select the PDL from the dropdown</p>
+        <p><span class="step-number">3</span> Choose consultation date and time</p>
+        <p><span class="step-number">4</span> Select consultation type:</p>
+        <ul>
+          <li><strong>Regular</strong> - Routine check-up</li>
+          <li><strong>Follow-up</strong> - Post-treatment review</li>
+          <li><strong>Emergency</strong> - Urgent medical attention</li>
+          <li><strong>Dental</strong> - Dental care</li>
+          <li><strong>Mental Health</strong> - Psychological consultation</li>
+        </ul>
+        <p><span class="step-number">5</span> Add notes or reason for consultation</p>
+        <p><span class="step-number">6</span> Click "Schedule Consultation"</p>
+
+        <h3>Conducting a Consultation</h3>
+        <h4>During the Consultation</h4>
+        <ol>
+          <li>Open the consultation from your dashboard</li>
+          <li>Record vital signs</li>
+          <li>Document symptoms and complaints</li>
+          <li>Enter diagnosis</li>
+          <li>Prescribe medications if needed</li>
+          <li>Add treatment notes</li>
+          <li>Schedule follow-up if required</li>
+        </ol>
+
+        <h4>Recording Vital Signs</h4>
+        <ul>
+          <li>Blood Pressure (systolic/diastolic)</li>
+          <li>Heart Rate (bpm)</li>
+          <li>Temperature (°C or °F)</li>
+          <li>Weight (kg or lbs)</li>
+          <li>Height (cm)</li>
+          <li>Respiratory Rate</li>
+          <li>Oxygen Saturation (%)</li>
+        </ul>
+
+        <h3>Completing a Consultation</h3>
+        <p><span class="step-number">1</span> Review all entered information</p>
+        <p><span class="step-number">2</span> Ensure all required fields are filled</p>
+        <p><span class="step-number">3</span> Click "Mark as Completed"</p>
+        <p><span class="step-number">4</span> The consultation will be saved to the PDL's medical history</p>
+
+        <h3>Canceling a Consultation</h3>
+        <ol>
+          <li>Open the scheduled consultation</li>
+          <li>Click "Cancel Consultation"</li>
+          <li>Provide a reason for cancellation</li>
+          <li>Confirm cancellation</li>
+        </ol>
+
+        <div class="alert-tip">
+          <strong><i class="bi bi-lightbulb me-2"></i>Best Practice:</strong>
+          Always complete consultation records immediately after the visit while details are fresh. 
+          This ensures accurate medical documentation.
+        </div>
+      </section>
+
+      <!-- Medications -->
+      <section id="medications" class="guide-section">
+        <h2><i class="bi bi-capsule me-2"></i>Medications</h2>
+        
+        <h3>Viewing Medication List</h3>
+        <p>Access the complete medication inventory:</p>
+        <ol>
+          <li>Click "Medications" in the navigation menu</li>
+          <li>Browse available medications</li>
+          <li>Use search to find specific drugs</li>
+          <li>Filter by category or type</li>
+        </ol>
+
+        <h3>Prescribing Medication</h3>
+        <p><span class="step-number">1</span> During a consultation, click "Prescribe Medication"</p>
+        <p><span class="step-number">2</span> Search and select the medication</p>
+        <p><span class="step-number">3</span> Enter dosage information:</p>
+        <ul>
+          <li>Dosage amount (e.g., 500mg)</li>
+          <li>Frequency (e.g., twice daily)</li>
+          <li>Duration (e.g., 7 days)</li>
+          <li>Route of administration (oral, injection, topical, etc.)</li>
+        </ul>
+        <p><span class="step-number">4</span> Add special instructions</p>
+        <p><span class="step-number">5</span> Click "Add Prescription"</p>
+
+        <h3>Medication Administration</h3>
+        <p>Track when medications are given:</p>
+        <ol>
+          <li>View active prescriptions for a PDL</li>
+          <li>Click "Record Administration"</li>
+          <li>Enter date and time given</li>
+          <li>Note any reactions or side effects</li>
+          <li>Save the record</li>
+        </ol>
+
+        <h3>Managing Medication Inventory</h3>
+        <h4>Adding New Medication</h4>
+        <ol>
+          <li>Click "Add Medication" button</li>
+          <li>Enter medication details:
+            <ul>
+              <li>Generic name</li>
+              <li>Brand name</li>
+              <li>Category/Type</li>
+              <li>Strength/Dosage form</li>
+              <li>Stock quantity</li>
+              <li>Expiration date</li>
+            </ul>
+          </li>
+          <li>Click "Save"</li>
+        </ol>
+
+        <h4>Updating Stock Levels</h4>
+        <ol>
+          <li>Find the medication in the list</li>
+          <li>Click "Update Stock"</li>
+          <li>Enter new quantity</li>
+          <li>Add notes about the update</li>
+          <li>Save changes</li>
+        </ol>
+
+        <div class="alert-warning-custom">
+          <strong><i class="bi bi-exclamation-triangle me-2"></i>Safety Warning:</strong>
+          Always check for drug interactions and allergies before prescribing. Verify dosages 
+          carefully to prevent medication errors.
+        </div>
+      </section>
+
+      <!-- Reports -->
+      <section id="reports" class="guide-section">
+        <h2><i class="bi bi-file-earmark-bar-graph me-2"></i>Reports</h2>
+        
+        <h3>Accessing Reports</h3>
+        <ol>
+          <li>Click "Reports" in the navigation menu</li>
+          <li>You'll see three main report categories:
+            <ul>
+              <li>Weekly Reports (Last 12 weeks)</li>
+              <li>Monthly Reports (Last 12 months)</li>
+              <li>Yearly Reports (Last 5 years)</li>
+            </ul>
+          </li>
+        </ol>
+
+        <h3>Report Data</h3>
+        <p>Each report shows:</p>
+        <ul>
+          <li><span class="badge-total">Total</span> - Total number of consultations</li>
+          <li><span class="badge-completed">Completed</span> - Successfully finished consultations</li>
+          <li><span class="badge-scheduled">Scheduled</span> - Upcoming appointments</li>
+          <li><span class="badge-canceled">Canceled</span> - Canceled consultations</li>
+          <li><span class="badge-emergency">Emergencies</span> - Emergency cases handled</li>
+        </ul>
+
+        <h3>Exporting Reports</h3>
+        <p>Export data to CSV format:</p>
+        <ol>
+          <li>Click on the export option at the top of the page</li>
+          <li>Choose the time period:
+            <ul>
+              <li>Weekly</li>
+              <li>Monthly</li>
+              <li>Yearly</li>
+            </ul>
+          </li>
+          <li>The CSV file will download automatically</li>
+          <li>Open in Excel or other spreadsheet software</li>
+        </ol>
+
+        <h3>Using Report Data</h3>
+        <p>Reports can be used for:</p>
+        <ul>
+          <li>Tracking healthcare trends</li>
+          <li>Resource planning</li>
+          <li>Performance evaluation</li>
+          <li>Compliance documentation</li>
+          <li>Budget forecasting</li>
+        </ul>
+
+        <div class="alert-tip">
+          <strong><i class="bi bi-lightbulb me-2"></i>Tip:</strong>
+          Export reports regularly for backup and analysis purposes. Monthly exports are 
+          recommended for record-keeping.
+        </div>
+      </section>
+
+      <!-- Calendar -->
+      <section id="calendar" class="guide-section">
+        <h2><i class="bi bi-calendar3 me-2"></i>Consultation Calendar</h2>
+        
+        <h3>Viewing the Calendar</h3>
+        <ol>
+          <li>Click "Consultation Calendar" in the navigation menu</li>
+          <li>View consultations in different formats:
+            <ul>
+              <li>Month view - See the entire month</li>
+              <li>Week view - Focus on one week</li>
+              <li>Day view - Detailed daily schedule</li>
+            </ul>
+          </li>
+        </ol>
+
+        <h3>Calendar Features</h3>
+        <h4>Color Coding</h4>
+        <ul>
+          <li><span style="color: #0d6efd;">Blue</span> - Regular consultations</li>
+          <li><span style="color: #198754;">Green</span> - Completed consultations</li>
+          <li><span style="color: #ffc107;">Yellow</span> - Scheduled/Upcoming</li>
+          <li><span style="color: #dc3545;">Red</span> - Emergency cases</li>
+          <li><span style="color: #6c757d;">Gray</span> - Canceled consultations</li>
+        </ul>
+
+        <h4>Quick Actions from Calendar</h4>
+        <ul>
+          <li>Click on any consultation to view details</li>
+          <li>Click on empty date/time to schedule new consultation</li>
+          <li>Drag and drop to reschedule (if enabled)</li>
+          <li>Right-click for quick menu options</li>
+        </ul>
+
+        <h3>Filtering Calendar View</h3>
+        <ol>
+          <li>Use the filter options at the top</li>
+          <li>Filter by:
+            <ul>
+              <li>Consultation type</li>
+              <li>Status</li>
+              <li>Specific PDL</li>
+              <li>Date range</li>
+            </ul>
+          </li>
+          <li>Click "Apply Filters"</li>
+        </ol>
+
+        <h3>Printing Calendar</h3>
+        <ol>
+          <li>Select the desired view (day/week/month)</li>
+          <li>Click the "Print" button</li>
+          <li>Adjust print settings</li>
+          <li>Print or save as PDF</li>
+        </ol>
+      </section>
+
+      <!-- Troubleshooting -->
+      <section id="troubleshooting" class="guide-section">
+        <h2><i class="bi bi-tools me-2"></i>Troubleshooting</h2>
+        
+        <h3>Common Issues and Solutions</h3>
+        
+        <h4>Cannot Login</h4>
+        <ul>
+          <li>Verify username and password are correct</li>
+          <li>Check Caps Lock is not enabled</li>
+          <li>Clear browser cache and cookies</li>
+          <li>Try a different browser</li>
+          <li>Contact system administrator if problem persists</li>
+        </ul>
+
+        <h4>Page Not Loading</h4>
+        <ul>
+          <li>Check internet connection</li>
+          <li>Refresh the page (F5 or Ctrl+R)</li>
+          <li>Clear browser cache</li>
+          <li>Try accessing from a different device</li>
+        </ul>
+
+        <h4>Data Not Saving</h4>
+        <ul>
+          <li>Ensure all required fields are filled</li>
+          <li>Check for error messages</li>
+          <li>Verify you have proper permissions</li>
+          <li>Try logging out and back in</li>
+        </ul>
+
+        <h4>Calendar Not Displaying</h4>
+        <ul>
+          <li>Refresh the page</li>
+          <li>Check date range filters</li>
+          <li>Ensure JavaScript is enabled</li>
+          <li>Try a different browser</li>
+        </ul>
+
+        <h3>Getting Help</h3>
+        <p>If you encounter issues not covered here:</p>
+        <ol>
+          <li>Document the error message or issue</li>
+          <li>Note what you were trying to do</li>
+          <li>Take a screenshot if possible</li>
+          <li>Contact your system administrator</li>
+          <li>Provide all relevant details</li>
+        </ol>
+
+        <h3>System Maintenance</h3>
+        <div class="alert-warning-custom">
+          <strong><i class="bi bi-exclamation-triangle me-2"></i>Notice:</strong>
+          The system may be temporarily unavailable during scheduled maintenance. 
+          Check with your administrator for maintenance schedules.
+        </div>
+
+        <h3>Browser Compatibility</h3>
+        <p>Recommended browsers:</p>
+        <ul>
+          <li>Google Chrome (latest version)</li>
+          <li>Mozilla Firefox (latest version)</li>
+          <li>Microsoft Edge (latest version)</li>
+          <li>Safari (latest version)</li>
+        </ul>
+
+        <h3>Contact Information</h3>
+        <div class="code-block">
+          Technical Support: support@medtrack.com<br>
+          Phone: +1 234 567 890<br>
+          Hours: Monday - Friday, 8:00 AM - 5:00 PM
+        </div>
+      </section>
+
+      <!-- Back to Top -->
+      <div class="text-center mt-5">
+        <a href="#" class="btn btn-primary">
+          <i class="bi bi-arrow-up me-2"></i>Back to Top
+        </a>
+      </div>
+
+    </div>
+  </div>
+</div>
+{% endblock %}

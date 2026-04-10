@@ -1,0 +1,20 @@
+{% extends "base.html" %}
+{% block title %}Prescription Detail{% endblock %}
+{% block content %}
+<div class="container mt-4">
+  <h1 class="h5">Prescription Detail</h1>
+  <div class="card mt-3">
+    <div class="card-body">
+      <p><strong>Patient:</strong> {{ obj.pdl_profile }}</p>
+      <p><strong>Medication:</strong> {{ obj.medication }}</p>
+      <p><strong>Dosage:</strong> {{ obj.dosage }}</p>
+      <p><strong>Frequency:</strong> {{ obj.frequency }}</p>
+      <p><strong>Duration:</strong> {{ obj.duration }}</p>
+      <p><strong>Quantity prescribed:</strong> {{ obj.quantity_prescribed }}</p>
+      <p><strong>quantity dispensed:</strong> {{ obj.quantity_dispensed }}</p>
+      <p><strong>Status:</strong> {{ obj.status }}</p>
+      <p><strong>Prescribed by:</strong> {{ obj.prescribed_by }}</p>
+    </div>
+  </div>
+</div>
+{% endblock %}
